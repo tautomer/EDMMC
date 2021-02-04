@@ -8,6 +8,7 @@ import json
 import time
 from typing import IO
 from dateutil.parser import parse
+from dateutil.relativedelta import relativedelta
 from collections import deque
 from main import MassacreMissions as mm
 from main import FactionMissions as fm
@@ -49,43 +50,40 @@ class ReadLog:
         for i in journals:
             mtime = os.path.getmtime(i)
             dt = ctime - mtime
-            if dt <= 172_800:
-                self.log_2days.append(i)
-            elif dt <= 604_800:
+            # if dt <= 172_800:
+            #     self.log_2days.append(i)
+            if dt <= 604_800:
                 self.log_7days.append(i)
             else:
                 break
+        self.log_7days.reverse()
 
-    def find_resumed_missions(self, event):
+    def find_resumed_missions(self, event: dict):
         """find all existing missions at startup
 
         Args:
             event (string): string contains the ED evernt in json
         """
         mission_status = ["Active", "Failed", "Complete"]
+        log_time = parse(event['timestamp']).timestamp()
         for istatus in mission_status:
             if len(event[istatus]) != 0:
                 for mission in event[istatus]:
-                    if "Massacre" in mission["Name"]:
-                        # if "Wing" in mission["name"]:
-                        #     is_wing = True
-                        # else:
-                        #     is_wing = False
-                        # mission["Status"] = istatus
-                        self.current_missions[mission['MissionID']] = istatus
+                    mission_name = mission["Name"]
+                    if "Massacre" in mission_name:
+                        # find the starting timestamp for missions
+                        if "Wing" in mission_name:
+                            start = log_time - 604_800 + mission["Expires"]
+                        else:
+                            start = log_time - 172_800 - mission["Expires"]
+                        self.current_missions[mission['MissionID']] = start
 
     def find_mission_details(self, massacre_missions: mm):
-        # try to find mission details within 2-day old logs
-        for journal in self.log_2days:
-            with open(journal, 'r') as log:
-                self.read_event(log, massacre_missions, True)
-        # non-wing missions accepted more than 2 days old should have been failed
-        for m in massacre_missions.missions.values():
-            if not m["Wing"]:
-                self.current_missions.pop(m["MissionID"])
-        for journal in self.log_2days:
-            with open(journal, 'r') as log:
-                self.read_event(log, massacre_missions, True)
+        oldest_mission = min(self.current_missions.values())
+        for journal in self.log_7days:
+            if os.path.getctime(journal) >= oldest_mission:
+                with open(journal, 'r') as log:
+                    self.read_event(log, massacre_missions, True)
         # TODO: should check if this part is done properly
         self.current_missions = {}
 
@@ -96,7 +94,7 @@ class ReadLog:
         # get rid of useless items
         [mission.pop(_) for _ in self.rm_key_list]
         # add my own status
-        mission["Status"] = self.current_missions[id]
+        mission["Status"] = "Active"
         # convert both starting and ending time to Unix timpstamps
         mission["timestamp"] = parse(mission["timestamp"]).timestamp() 
         mission["Expiry"] = parse(mission["Expiry"]).timestamp() 
@@ -113,22 +111,51 @@ class ReadLog:
             massacre_missions.factions[faction].kill_count += mission["KillCount"]
             massacre_missions.factions[faction].progress += mission["Progress"]
             massacre_missions.factions[faction].running.append(id)
-        # add modified mission details to dictionary
-        massacre_missions.missions[id] = mission
         # add to id list for easy check
         massacre_missions.mission_ids.append(id)
+        # add modified mission details to dictionary
+        massacre_missions.missions[id] = mission
 
-    def mission_redirected(self, id, mission, massacre_missions):
-        pass
+    def mission_redirected(self, id, redirection, massacre_missions):
+        # find mission details based on mission ID
+        mission = massacre_missions.missions[id]
+        # update mission status
+        mission["Status"] = "Done"
+        mission["DestinationSystem"] = redirection["NewDestinationSystem"]
+        # check progess and kill counts
+        progress = mission["Progress"]
+        kill_count = mission["KillCount"]
+        # find mission faction info
+        faction = massacre_missions.factions[mission["Faction"]]
+        # update faction info
+        faction.running.remove(id)
+        faction.completed.append(id)
+        # if there is any discrepancy
+        if progress != kill_count:
+            print("Discrepancy in mission progress detected. Update information "
+                "based on ED log.")
+            delta = kill_count - progress
+            faction.progress += delta
 
     def mission_completed(self, id, massacre_missions):
-        pass
+        # find mission details based on mission ID
+        mission = massacre_missions.missions[id]
+        # update mission status
+        mission["Status"] = "Claimed"
 
-    def mission_failed(self, id, massacre_missions):
-        pass
-
-    def mission_abandoned(self, id, massacre_missions):
-        pass
+    def mission_failed(self, id: int, massacre_missions: mm, status: str):
+        # find mission details based on mission ID
+        mission = massacre_missions.missions[id]
+        # update mission status
+        mission["Status"] = status
+        # find mission faction info
+        faction = massacre_missions.factions[mission["Faction"]]
+        # update faction info
+        if id in faction.running:
+            faction.running.remove(id)
+        if id in faction.completed:
+            faction.completed.remove(id)
+        faction.failed.append(id)
 
     def read_event(self, log: IO, missions: mm, historical: bool):    
         # initialize missions
@@ -142,25 +169,23 @@ class ReadLog:
             if '"event":"Missions"' in event:
                 if not historical:
                     current_missions = json.loads(event)
-                    # log_time = parse(current_missions['timestamp']).timestamp()
                     self.find_resumed_missions(current_missions)
                     self.find_mission_details(missions)
-                    break
             elif "Mission_Massacre" in event:
                 mission = json.loads(event)
                 id = mission["MissionID"] 
-                if '"event":"MissionAccepted"' in event:
-                    if id in self.current_missions:
-                        self.mission_accepted(id, mission, missions)
-                    elif not historical:
-                        pass
-                elif '"event":"MissionRedirected"' in event:
-                    if id in self.current_missions:
-                        self.mission_redirected(id, mission, missions)
-                    elif not historical:
-                        pass
-                elif '"event":"MissionCompleted"' in event:
+                if historical and id not in self.current_missions:
+                    continue
+                status = mission["event"].split("Mission", 1)[1]
+                if status == "Accepted":
+                    self.mission_accepted(id, mission, missions)
+                elif status == "Redirected":
+                    self.mission_redirected(id, mission, missions)
+                elif status == "Completed":
                     self.mission_completed(id, missions)
+                else:
+                    # for failed or abondoned missions
+                    self.mission_failed(id, missions, status)
         return missions
 
 rl = ReadLog()
@@ -169,4 +194,4 @@ rl.find_journals()
 missions = mm([], {}, 0, {})
 missions = rl.read_event(rl.current_log, missions, False)
 for k,v in missions.factions.items():
-    print(k, v.mission_count, v.kill_count, v.running)
+    print(k, v.mission_count, v.kill_count, v.running, v.completed)
