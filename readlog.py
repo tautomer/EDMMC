@@ -5,13 +5,14 @@ import sys
 # sys.path.append(dir_root)
 import glob
 import json
+# import ujson as json
 import time
 from typing import IO
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
 from collections import deque
-from main import MassacreMissions as mm
-from main import FactionMissions as fm
+from .main import MassacreMissions as mm
+from .main import FactionMissions as fm
 
 class ReadLog:
 
@@ -93,6 +94,8 @@ class ReadLog:
             return
         # get rid of useless items
         [mission.pop(_) for _ in self.rm_key_list]
+        if not massacre_missions.target_faction:
+            massacre_missions.target_faction = mission["TargetFaction"]
         # add my own status
         mission["Status"] = "Active"
         # convert both starting and ending time to Unix timpstamps
@@ -157,6 +160,15 @@ class ReadLog:
             faction.completed.remove(id)
         faction.failed.append(id)
 
+    def bounty_awarded(self, bounty: dict, massacre_missions: mm):
+        massacre_missions.pirates_killed += 1
+        massacre_missions.total_bounty_claimed += bounty["TotalReward"] * 4
+        if bounty["VictimFaction"] == massacre_missions.target_faction:
+            massacre_missions.target_faction_pirates_killed += 1
+            for i in massacre_missions.factions.values():
+                i.progress += 1
+                massacre_missions.missions[i.running[0]].progress += 1
+
     def read_event(self, log: IO, missions: mm, historical: bool):    
         # initialize missions
         events = log.readlines()
@@ -186,12 +198,14 @@ class ReadLog:
                 else:
                     # for failed or abondoned missions
                     self.mission_failed(id, missions, status)
+            elif '"event":"Bounty"' in event:
+                pass
         return missions
 
 rl = ReadLog()
 rl.check_ed_log_path()
 rl.find_journals()
-missions = mm([], {}, 0, {})
+missions = mm([], {}, "", 0, 0, 0, {})
 missions = rl.read_event(rl.current_log, missions, False)
 for k,v in missions.factions.items():
     print(k, v.mission_count, v.kill_count, v.running, v.completed)
