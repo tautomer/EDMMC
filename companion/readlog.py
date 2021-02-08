@@ -5,38 +5,45 @@ import json
 # import ujson as json
 import time
 from typing import IO, Union
+from dataclasses_json.api import dataclass_json
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
+from typing import List, Dict
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 
+@dataclass_json
 @dataclass
 class FactionMissions:
     mission_count: int 
     kill_count: int
     progress: int
-    running: list[int]
-    ready: list[int]
-    past: list[int]
+    running: List[int]
+    ready: List[int]
+    past: List[int]
 
+@dataclass_json
 @dataclass
 class MassacreMissions:
-    mission_ids: list[int]
-    factions: dict[FactionMissions]
+    mission_ids: List[int]
+    factions: Dict[str, FactionMissions]
     target_faction: str
     pirates_killed: int
     target_faction_pirates_killed: int
     total_bounty_claimed: int
-    missions: dict[dict]
+    missions: Dict[str, Dict]
 
 class ReadLog:
 
     def __init__(self):
         self.log_path = ""
-        self.current_log = ""
+        self.current_log = IO
         self.current_log_name = ""
         self.log_time = 0
         self.log_7days = []
         self.is_game_running = False
+        self.sanity = True
+        self.past_missions = False
         self.current_missions = {}
         self.current_massacre_missions = []
         self.mission_id = {}
@@ -57,13 +64,16 @@ class ReadLog:
     def find_journals(self, initialized: bool):
         """find the latest journal and journals in the past 7 days for resumed misisons
         """
+        # FIXME: this way of checking new files is NOT working
         # TODO: `glob` could be slow
         journals = glob.glob(self.log_path + "\Journal.*.log")
         journals.sort(key=os.path.getmtime, reverse=True)
         latest = journals.pop(0)
         if self.current_log_name != latest:
             self.current_log_name = latest
-            self.current_log = open(latest)
+            if not self.current_log:
+                self.current_log.close()
+            self.current_log = open(latest, "r")
         # TODO: is there a saner way to do this?
         if not initialized:
             ctime = os.path.getctime(latest)
@@ -89,6 +99,8 @@ class ReadLog:
         # have to store the current log in RAM
         # TODO: possbily avoid this way?
         events = log.readlines()
+        if not events:
+            raise RuntimeError
         self.check_ed_status(events[-1])
         ln = 0
         # find the latest login event for existing missions
@@ -105,13 +117,14 @@ class ReadLog:
                 initialized = True
                 break
         if not initialized:
-            sys.exit("Something wrong with the log file.")
+            raise RuntimeError
         # every entry before the restarting will be useless
         cut = len(events) - ln + 1
         # check possible mission events before resume in current log
         self.read_event(events[:cut-1], missions, False)
         # check all new mission and bounty events
         self.read_event(events[cut:], missions, initialized)
+        # self.cleanup(missions)
         return initialized
 
     def find_resumed_missions(self, event: dict):
@@ -187,12 +200,13 @@ class ReadLog:
         faction.ready.append(id)
         # if there is any discrepancy
         if progress != kill_count:
+            self.sanity = False
             print("Discrepancy in mission progress detected. Update information "
                 "based on ED log.")
             delta = kill_count - progress
             mission["Progress"] = kill_count
             faction.progress += delta
-
+    
     # TODO: seems `completed` and `failed` can be merged
     def mission_completed(self, id: int, massacre_missions: MassacreMissions):
         # find mission details based on mission ID
@@ -204,6 +218,7 @@ class ReadLog:
         # update faction info
         faction.ready.remove(id)
         faction.past.append(id)
+        self.past_missions = True
 
     def mission_failed(self, id: int, massacre_missions: MassacreMissions, status: str):
         # find mission details based on mission ID
@@ -219,10 +234,12 @@ class ReadLog:
         if id in faction.ready:
             faction.ready.remove(id)
         faction.past.append(id)
+        self.past_missions = True
 
+    # TODO: does killing in another system count?
     def bounty_awarded(self, bounty: dict, massacre_missions: MassacreMissions):
         massacre_missions.pirates_killed += 1
-        massacre_missions.total_bounty_claimed += bounty["TotalReward"] * 4
+        massacre_missions.total_bounty_claimed += bounty["TotalReward"]
         if bounty["VictimFaction"] == massacre_missions.target_faction:
             massacre_missions.target_faction_pirates_killed += 1
             for i in massacre_missions.factions.values():
@@ -260,7 +277,6 @@ class ReadLog:
         for f in missions.factions.values():
             if len(f.past) != 0:
                 for id in f.past:
-                    print(id)
                     details = missions.missions.pop(id)
                     missions.mission_ids.remove(id)
                     kill_count = details["KillCount"]
@@ -269,17 +285,45 @@ class ReadLog:
                     f.progress -= progress
                     f.mission_count -= 1
                 f.past.clear()
+        self.past_missions = False
 
     def update(self, missions: MassacreMissions, initialized: bool):
         # only check if there are new journals when ED is not running
+        # FIXME: this way isn't able to handle game crash
         if not self.is_game_running:
             self.find_journals(initialized)
         else:
-            # read new part in log
-            self.discard_past_missions(missions)
             # read log file updates
             new_events = self.current_log.readlines()
             # if there are new events
             if len(new_events) != 0:
                 self.check_ed_status(new_events[-1])
                 self.read_event(new_events, missions, initialized)
+            self.cleanup(missions)
+
+    def cleanup(self, missions: MassacreMissions):
+        if self.past_missions:
+            self.discard_past_missions(missions)
+        if not self.sanity:
+            pass
+            # self.sanity_check(missions)
+
+    def sanity_check(self, massacre_missions: MassacreMissions):
+        print(" There are discrepancies in mission progress being detected.",
+            "Please consider maunally update all mission progesses by",
+            "providing information in the prompt below. You can skip this by",
+            "leaving all input blank.")
+        for i in massacre_missions.missions.values():
+            prompt = "Mission information:\nFaction name: " + i["Faction"] + \
+                "\nMission kill count: " + str(i["KillCount"]) + "\nCurrently logged " + \
+                "mission progress: " + str(i["Progress"]) + "\nActual progess shown " + \
+                "in-game: " 
+            try:
+                progress = int(input(prompt))
+                delta = progress - i["Progress"] 
+                i["Progress"] = progress
+                faction = i["Faction"]
+                massacre_missions.factions[faction].progress -= delta
+            except ValueError:
+                print("Invalid input. Progress unchanged.")
+            self.sanity = True
