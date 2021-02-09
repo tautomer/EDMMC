@@ -31,7 +31,7 @@ class MassacreMissions:
     pirates_killed: int
     target_faction_pirates_killed: int
     total_bounty_claimed: int
-    missions: Dict[str, Dict]
+    missions: Dict[int, Dict]
 
 class ReadLog:
 
@@ -245,6 +245,7 @@ class ReadLog:
             for i in massacre_missions.factions.values():
                 if len(i.running) != 0:
                     i.progress += 1
+                    print()
                     massacre_missions.missions[i.running[0]]["Progress"] += 1
 
     def read_event(self, events: Union[IO, list], missions: MassacreMissions, initialized: bool):    
