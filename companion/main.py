@@ -9,6 +9,9 @@ from readlog import ReadLog
 from readlog import MassacreMissions
 
 rl = ReadLog()
+# FIXME: this way of restarting only works if this program is run alongside with ED every time
+# with open("test_log.txt", "r") as f:
+#     missions = MassacreMissions.from_json(f.read())
 missions = MassacreMissions([], {}, "", 0, 0, 0, {})
 initialized = False
 rl.check_ed_log_path()
@@ -17,6 +20,7 @@ while True:
     try:
         initialized = rl.initialize(rl.current_log, missions, initialized)
     except RuntimeError:
+        # TODO: also need check this when a new log is found
         os.system('cls') 
         print("The current log is empty. Waiting for log updates when the game is continued.")
         time.sleep(3)
@@ -25,7 +29,6 @@ while True:
 
 # rl.sanity_check(missions)
 rl.update(missions, initialized)
-print(missions.target_faction_pirates_killed)
 for k, v in missions.factions.items():
     print(v.progress, v.kill_count, k, v.mission_count)
     for i in v.running:
