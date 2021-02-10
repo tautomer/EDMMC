@@ -64,7 +64,7 @@ class ReadLog:
     def find_journals(self, initialized: bool):
         """find the latest journal and journals in the past 7 days for resumed misisons
         """
-        # FIXME: this way of checking new files is NOT working
+        # FIXME: this way of checking new files is way too bad
         # TODO: `glob` could be slow
         journals = glob.glob(self.log_path + "\Journal.*.log")
         journals.sort(key=os.path.getmtime, reverse=True)
@@ -74,6 +74,7 @@ class ReadLog:
             if not self.current_log:
                 self.current_log.close()
             self.current_log = open(latest, "r")
+            self.is_game_running = True
         # TODO: is there a saner way to do this?
         if not initialized:
             ctime = os.path.getctime(latest)
@@ -245,7 +246,6 @@ class ReadLog:
             for i in massacre_missions.factions.values():
                 if len(i.running) != 0:
                     i.progress += 1
-                    print()
                     massacre_missions.missions[i.running[0]]["Progress"] += 1
 
     def read_event(self, events: Union[IO, list], missions: MassacreMissions, initialized: bool):    
@@ -270,9 +270,12 @@ class ReadLog:
                     # for failed or abondoned missions
                     self.mission_failed(id, missions, status)
             # find event for pirates killeed
-            elif initialized and '"event":"Bounty"' in event:
-                bounty = json.loads(event)
-                self.bounty_awarded(bounty, missions)
+            elif initialized:
+                if '"event":"Bounty"' in event:
+                    bounty = json.loads(event)
+                    self.bounty_awarded(bounty, missions)
+                else:
+                    self.check_ed_status(event)
 
     def discard_past_missions(self, missions: MassacreMissions):
         for f in missions.factions.values():
