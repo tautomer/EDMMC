@@ -150,7 +150,7 @@ class ReadLog:
     def find_mission_details(self, massacre_missions: MassacreMissions):
         oldest_mission = min(self.current_missions.values())
         for journal in self.log_7days:
-            if os.path.getctime(journal) >= oldest_mission:
+            if os.path.getmtime(journal) >= oldest_mission:
                 with open(journal, 'r') as log:
                     self.read_event(log, massacre_missions, False)
 
@@ -159,7 +159,12 @@ class ReadLog:
         if id in massacre_missions.mission_ids:
             return
         # get rid of useless items
-        [mission.pop(_) for _ in self.rm_key_list]
+        for i in self.rm_key_list:
+            try:
+                mission.pop(i)
+            # TODO: there are massacre mission on clean ships when war state
+            except KeyError:
+                pass
         if not massacre_missions.target_faction:
             massacre_missions.target_faction = mission["TargetFaction"]
         # add my own status
