@@ -148,11 +148,14 @@ class ReadLog:
                         self.current_missions[mission['MissionID']] = start
 
     def find_mission_details(self, massacre_missions: MassacreMissions):
-        oldest_mission = min(self.current_missions.values())
-        for journal in self.log_7days:
-            if os.path.getmtime(journal) >= oldest_mission:
-                with open(journal, 'r') as log:
-                    self.read_event(log, massacre_missions, False)
+        try:
+            oldest_mission = min(self.current_missions.values())
+            for journal in self.log_7days:
+                if os.path.getmtime(journal) >= oldest_mission:
+                    with open(journal, 'r') as log:
+                        self.read_event(log, massacre_missions, False)
+        except ValueError:
+            print("Empty mission list")
 
     def mission_accepted(self, id: int, mission: dict, massacre_missions: MassacreMissions):
         # there could be multiple resumed sessions
