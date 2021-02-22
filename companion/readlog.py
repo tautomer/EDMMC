@@ -3,7 +3,6 @@ import sys
 import glob
 import json
 # import ujson as json
-import time
 from typing import IO, Union
 from dataclasses_json.api import dataclass_json
 from dateutil.parser import parse
@@ -47,8 +46,8 @@ class ReadLog:
         self.current_missions = {}
         self.current_massacre_missions = []
         self.mission_id = {}
-        self.rm_key_list = ["event", "Name", "LocalisedName", "TargetType",
-            "DestinationStation", "Influence", "Reputation"]
+        self.rm_key_list = ["event", "Name", "LocalisedName",
+            "Influence", "Reputation"]
 
     def check_ed_log_path(self):
         """find ED log path and client status
@@ -199,6 +198,7 @@ class ReadLog:
         # update mission status
         mission["Status"] = "Done"
         mission["DestinationSystem"] = redirection["NewDestinationSystem"]
+        mission["DestinationStation"] = redirection["NewDestinationStation"]
         # check progess and kill counts
         progress = mission["Progress"]
         kill_count = mission["KillCount"]
