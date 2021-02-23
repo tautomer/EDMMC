@@ -2,36 +2,11 @@ import os
 import sys
 import glob
 import json
+from tkinter import Variable
 # import ujson as json
-from typing import IO, Union
-from dataclasses_json.api import dataclass_json
+from typing import Dict, IO, Union
 from dateutil.parser import parse
-from dateutil.relativedelta import relativedelta
-from typing import List, Dict
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-
-@dataclass_json
-@dataclass
-class FactionMissions:
-    mission_count: int 
-    kill_count: int
-    progress: int
-    running: List[int]
-    ready: List[int]
-    past: List[int]
-
-@dataclass_json
-@dataclass
-class MassacreMissions:
-    mission_ids: List[int]
-    factions: Dict[str, FactionMissions]
-    target_faction: str
-    pirates_killed: int
-    target_faction_pirates_killed: int
-    total_bounty_claimed: int
-    missions: Dict[int, Dict]
-
+from constructors import MassacreMissions, FactionMissions, DynamicalLabels, Labels
 class ReadLog:
 
     def __init__(self):
@@ -46,8 +21,9 @@ class ReadLog:
         self.current_missions = {}
         self.current_massacre_missions = []
         self.mission_id = {}
-        self.rm_key_list = ["event", "Name", "LocalisedName",
-            "Influence", "Reputation"]
+        self.rm_key_list = ["event", "Name", "LocalisedName", "Influence",
+            "Reputation"]
+        self.label_texts = DynamicalLabels({}, {})
 
     def check_ed_log_path(self):
         """find ED log path and client status
@@ -124,7 +100,8 @@ class ReadLog:
         self.read_event(events[:cut-1], missions, False)
         # check all new mission and bounty events
         self.read_event(events[cut:], missions, initialized)
-        # self.cleanup(missions)
+        # assign values to the labels
+        Labels.variable_labels(missions, self.label_texts)
         return initialized
 
     def find_resumed_missions(self, event: dict):
@@ -173,26 +150,34 @@ class ReadLog:
         mission["Status"] = "Active"
         # convert both starting and ending time to Unix timpstamps
         mission["timestamp"] = parse(mission["timestamp"]).timestamp() 
-        mission["Expiry"] = parse(mission["Expiry"]).timestamp() 
-        # current progress
+        mission["Expiry"] = int(parse(mission["Expiry"]).timestamp())
+        # current Progress
         # TODO: this should be also read from input or history
         mission["Progress"] = 0
         faction = mission["Faction"]
         # add faction-specific information
         if faction not in massacre_missions.factions:
-            massacre_missions.factions[faction] = FactionMissions(1,
-                mission["KillCount"], mission["Progress"], [id], [], [])
+            # there are other massacre missions whose targets are NOT pirates
+            if mission["TargetType_Localised"] == "Pirates":
+                massacre_missions.factions[faction] = FactionMissions(1,
+                    mission["KillCount"], mission["Progress"], [id], [], [], [])
+            else:
+                massacre_missions.factions[faction] = FactionMissions(1,
+                    0, 0, [], [], [], [id])
         else:
-            massacre_missions.factions[faction].mission_count += 1
-            massacre_missions.factions[faction].kill_count += mission["KillCount"]
-            massacre_missions.factions[faction].progress += mission["Progress"]
-            massacre_missions.factions[faction].running.append(id)
+            if mission["TargetType_Localised"] == "Pirates":
+                massacre_missions.factions[faction].mission_count += 1
+                massacre_missions.factions[faction].KillCount += mission["KillCount"]
+                massacre_missions.factions[faction].Progress += mission["Progress"]
+                massacre_missions.factions[faction].running.append(id)
+            else:
+                massacre_missions.factions[faction].other.append(id)
         # add to id list for easy check
         massacre_missions.mission_ids.append(id)
         # add modified mission details to dictionary
         massacre_missions.missions[id] = mission
 
-    def mission_redirected(self, id, redirection, massacre_missions):
+    def mission_redirected(self, id: int, redirection: Dict, massacre_missions: MassacreMissions):
         # find mission details based on mission ID
         mission = massacre_missions.missions[id]
         # update mission status
@@ -210,11 +195,11 @@ class ReadLog:
         # if there is any discrepancy
         if progress != kill_count:
             self.sanity = False
-            print("Discrepancy in mission progress detected. Update information "
+            print("Discrepancy in mission Progress detected. Update information "
                 "based on ED log.")
             delta = kill_count - progress
             mission["Progress"] = kill_count
-            faction.progress += delta
+            faction.Progress += delta
     
     # TODO: seems `completed` and `failed` can be merged
     def mission_completed(self, id: int, massacre_missions: MassacreMissions):
@@ -253,7 +238,7 @@ class ReadLog:
             massacre_missions.target_faction_pirates_killed += 1
             for i in massacre_missions.factions.values():
                 if len(i.running) != 0:
-                    i.progress += 1
+                    i.Progress += 1
                     massacre_missions.missions[i.running[0]]["Progress"] += 1
 
     def read_event(self, events: Union[IO, list], missions: MassacreMissions, initialized: bool):    
@@ -293,8 +278,8 @@ class ReadLog:
                     missions.mission_ids.remove(id)
                     kill_count = details["KillCount"]
                     progress = details["Progress"]
-                    f.kill_count -= kill_count 
-                    f.progress -= progress
+                    f.KillCount -= kill_count 
+                    f.Progress -= progress
                     f.mission_count -= 1
                 f.past.clear()
         self.past_missions = False
@@ -321,21 +306,21 @@ class ReadLog:
             # self.sanity_check(missions)
 
     def sanity_check(self, massacre_missions: MassacreMissions):
-        print(" There are discrepancies in mission progress being detected.",
+        print(" There are discrepancies in mission Progress being detected.",
             "Please consider maunally update all mission progesses by",
             "providing information in the prompt below. You can skip this by",
             "leaving all input blank.")
         for i in massacre_missions.missions.values():
             prompt = "Mission information:\nFaction name: " + i["Faction"] + \
                 "\nMission kill count: " + str(i["KillCount"]) + "\nCurrently logged " + \
-                "mission progress: " + str(i["Progress"]) + "\nActual progess shown " + \
+                "mission Progress: " + str(i["Progress"]) + "\nActual progess shown " + \
                 "in-game: " 
             try:
-                progress = int(input(prompt))
-                delta = progress - i["Progress"] 
-                i["Progress"] = progress
+                Progress = int(input(prompt))
+                delta = Progress - i["Progress"] 
+                i["Progress"] = Progress
                 faction = i["Faction"]
-                massacre_missions.factions[faction].progress -= delta
+                massacre_missions.factions[faction].Progress -= delta
             except ValueError:
                 print("Invalid input. Progress unchanged.")
             self.sanity = True

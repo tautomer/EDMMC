@@ -6,7 +6,7 @@ import time
 # sys.path.append(dir_root)
 import json
 from readlog import ReadLog
-from readlog import MassacreMissions
+from constructors import MassacreMissions
 from gui import CompanionGUI
 
 # FIXME: this way of restarting only works if this program is run alongside with ED every time
@@ -32,38 +32,38 @@ while True:
 # rl.sanity_check(missions)
 rl.update(missions, initialized)
 for k, v in missions.factions.items():
-    # print(v.progress, v.kill_count, k, v.mission_count)
+    # print(v.Progress, v.KillCount, k, v.mission_count)
     # for i in v.running:
     #     print("    ", missions.missions[i]["Progress"], missions.missions[i]["KillCount"])
-    # print(k, v.mission_count, v.progress, v.kill_count, v.running, v.past)
-    cg.add_faction(k, v)
+    # print(k, v.mission_count, v.Progress, v.KillCount, v.running, v.past)
+    cg.add_faction(k, rl.label_texts.factions[k])
     for i, id in enumerate(v.running):
-        cg.add_mission(k, missions.missions[id], i+1)
+        cg.add_mission(id, k, rl.label_texts.missions[id], i+1)
     for i, id in enumerate(v.ready):
-        cg.add_mission(k, missions.missions[id], i+1)
+        cg.add_mission(id, k, rl.label_texts.missions[id], i+1)
     for i, id in enumerate(v.past):
-        cg.add_mission(k, missions.missions[id], i+1)
+        cg.add_mission(id, k, rl.label_texts.missions[id], i+1)
 
 cg.window.mainloop()
-while True:
-    try:
-        rl.update(missions, initialized)
-        os.system('cls') 
-        for k,v in missions.factions.items():
-            if v.mission_count != 0:
-                print(k, v.mission_count, v.progress, v.kill_count)
-            for i in v.running:
-                print("    ", missions.missions[i]["Wing"], missions.missions[i]["Progress"], missions.missions[i]["KillCount"])
-
-        print("Target faction pirates killed:", missions.target_faction_pirates_killed)
-        print("Total pirates killed:", missions.pirates_killed)
-        # TODO: larger interval if game isn't running. this value should be configurable ultimately
-        if not rl.is_game_running:
-            print("ED client is not running currently.")
-        time.sleep(3)
-    except KeyboardInterrupt:
-        # TODO: wrap this part in a function, together with reading
-        with open("test_log.txt", "w") as out:
-            json.dump(missions.to_dict(), out, indent=4)
-        break
- 
+# while True:
+#     try:
+#         rl.update(missions, initialized)
+#         os.system('cls') 
+#         for k,v in missions.factions.items():
+#             if v.mission_count != 0:
+#                 print(k, v.mission_count, v.Progress, v.KillCount)
+#             for i in v.running:
+#                 print("    ", missions.missions[i]["Wing"], missions.missions[i]["Progress"], missions.missions[i]["KillCount"])
+# 
+#         print("Target faction pirates killed:", missions.target_faction_pirates_killed)
+#         print("Total pirates killed:", missions.pirates_killed)
+#         # TODO: larger interval if game isn't running. this value should be configurable ultimately
+#         if not rl.is_game_running:
+#             print("ED client is not running currently.")
+#         time.sleep(3)
+#     except KeyboardInterrupt:
+#         # TODO: wrap this part in a function, together with reading
+#         with open("test_log.txt", "w") as out:
+#             json.dump(missions.to_dict(), out, indent=4)
+#         break
+#  
