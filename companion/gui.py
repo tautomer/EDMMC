@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter import font
-from readlog import MassacreMissions, FactionMissions, DynamicalLabels, Labels
+from constructors import Labels
 import random
-import time
 
 class DynamicGrid(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -21,22 +20,6 @@ class DynamicGrid(tk.Frame):
         self.text.window_create("end", window=box)
         self.text.configure(state="disabled")
 
-class Example(object):
-    def __init__(self):
-        self.root = tk.Tk()
-        self.dg = DynamicGrid(self.root, width=500, height=200)
-        add_button  = tk.Button(self.root, text="Add", command=self.dg.add_box)
-
-        add_button.pack()
-        self.dg.pack(side="top", fill="both", expand=True)
-
-        # add a few boxes to start
-        for i in range(10):
-            self.dg.add_box()
-
-    def start(self):
-        self.root.mainloop()
-
 class CompanionGUI:
     
     def __init__(self):
@@ -44,6 +27,8 @@ class CompanionGUI:
         self.font = font.nametofont("TkDefaultFont")
         self.fontsize = self.font.config(size=14)
         self.window.title("Elite: Dangerous Massacre Missions Companion")
+        self.window.minsize(width=960, height=540)
+        self.window.resizable(True, True)
         self.faction_labels = ["mission_count", "Progress", "KillCount"]
         self.faction_texts = ["Mission Count: ", "Progress: ", "Kill Count "]
         # TODO: change this to a dictionary, also allows for more options
@@ -155,30 +140,21 @@ class CompanionGUI:
             self.missions[id].append(label)
             i += 1
 
-        # for idx in range(6):
-        #     try:
-        #         txt = str(mission[self.mission_label_key[idx]])
-        #     except KeyError:
-        #         print("Will not be a problem next time!")
-        #     i = self.mission_label_index[idx]
-        #     # w = self.mission_label_width[idx]
-        #     # frame.columnconfigure(i, minsize=w, weight=1)
-        #     label = tk.Label(master=parent, text=txt, relief=tk.FLAT, border=2)
-        #     label.grid(row=mission_idx, column=i, sticky="we")
-        #     self.missions[mission["MissionID"]].append(label)
-        # # progress and expiry time need to be dealt separately
-        # # for mission exprie time
-        # current_time = time.time()
-        # time_left = mission["Expiry"] - current_time
-        # if time_left <= 0:
-        #     time_left = "Past Due"
-        # label = tk.Label(master=parent, text=time_left, relief=tk.FLAT, border=2)
-        # label.grid(row=mission_idx, column=7, sticky="we")
-        # self.missions[mission["MissionID"]].append(label)
-        # # for mission progress
-        # progress = str(mission["Progress"]) + "/" + str(mission["KillCount"])
-        # # w = self.mission_label_width[7]
-        # # frame.columnconfigure(4, minsize=w, weight=1)
-        # label = tk.Label(master=parent, text=progress, relief=tk.FLAT, border=2)
-        # label.grid(row=mission_idx, column=4, sticky="we")
-        # self.missions[mission["MissionID"]].append(label)
+    def destroy_faction(self, name: str):
+        for w in self.factions[name]:
+            w.destroy()
+
+    def destroy_missions(self, rmlist: list):
+        for id in rmlist:
+            for w in self.missions[id]:
+                w.destroy()
+        return []
+
+    def status_bar(self):
+        frame = tk.Frame(master=self.window, relief=tk.RAISED, border=2, pady=3)
+        frame.pack(fill=tk.BOTH, anchor="w")
+        cali = tk.Button(master=frame, text="Calibrate")
+        cali.pack(anchor="e", side="right")
+        status = tk.Label(master=frame, text="ED client is not running")
+        status.pack(anchor="w", side="right")
+        pass

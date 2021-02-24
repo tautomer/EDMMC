@@ -47,7 +47,7 @@ class Labels:
         },
         {
             "text": "Progress:",
-            "key": "progress",
+            "key": "Progress",
             "len": 8,
             "minsize": 50
         } 
@@ -88,40 +88,50 @@ class Labels:
     ]
 
     @staticmethod
-    def variable_labels(missions: MassacreMissions, labels:DynamicalLabels):
-        # build faction part
-        for name, value in missions.factions.items():
-            labels.factions[name] = {"name": {"text": name}}
-            labels.factions[name]["mission_count"] = {"textvariable": 
-                tk.IntVar(value=value.mission_count)}
-            progress = str(value.Progress) + "/" + str(value.KillCount)
-            labels.factions[name]["progress"] = {"textvariable": 
-                tk.StringVar(value=progress)}
+    def faction_label_text_setup(name: str, labels: DynamicalLabels):
+        labels.factions[name] = {"name": {"text": name}}
+        labels.factions[name]["mission_count"] = {"textvariable": tk.IntVar()}
+        labels.factions[name]["Progress"] = {"textvariable": tk.StringVar()}
+
+    @staticmethod
+    def mission_label_text_setup(id: int, mission: dict, labels:DynamicalLabels):
         # build mission part
+        labels.missions[id] = {"System": {"textvariable":
+            tk.StringVar(value=mission["DestinationSystem"])}}
+        labels.missions[id]["Station"] = {"textvariable":
+            tk.StringVar(value=mission["DestinationStation"])}
+        labels.missions[id]["Target Faction"] = {"text":
+            mission["TargetFaction"]}
+        labels.missions[id]["Target Type"] = {"text":
+            mission["TargetType_Localised"]}
+        labels.missions[id]["Progress"] = {"text":
+            mission["TargetType_Localised"]}
+        progress = str(mission["Progress"]) + "/" + str(mission["KillCount"])
+        labels.missions[id]["Progress"] = {"textvariable":
+            tk.StringVar(value=progress)}
+        labels.missions[id]["Wing Mission"] = {"text": str(mission["Wing"])}
+        labels.missions[id]["Status"] = {"textvariable":
+            tk.StringVar(value=mission["Status"])}
+        expiry = Labels.calculate_expiry_time(mission["Expiry"])
+        labels.missions[id]["Expiry"] = {"textvariable":
+            tk.StringVar(value=expiry)}
+
+    @staticmethod
+    def calculate_expiry_time(expiry_time: int):
         current_time = int(time.time())
-        for id, details in missions.missions.items():
-            labels.missions[id] = {"System": {"textvariable":
-                tk.StringVar(value=details["DestinationSystem"])}}
-            labels.missions[id]["Station"] = {"textvariable":
-                tk.StringVar(value=details["DestinationStation"])}
-            labels.missions[id]["Target Faction"] = {"text":
-                details["TargetFaction"]}
-            labels.missions[id]["Target Type"] = {"text":
-                details["TargetType_Localised"]}
-            labels.missions[id]["Progress"] = {"text":
-                details["TargetType_Localised"]}
-            progress = str(details["Progress"]) + "/" + str(details["KillCount"])
-            labels.missions[id]["Progress"] = {"textvariable":
-                tk.StringVar(value=progress)}
-            labels.missions[id]["Wing Mission"] = {"text": str(details["Wing"])}
-            labels.missions[id]["Status"] = {"textvariable":
-                tk.StringVar(value=details["Status"])}
-            dt = details["Expiry"] - current_time
-            if dt <= 0:
-                expiry = "Past Due"
-            else:
-                rt = relativedelta(seconds=dt)
-                expiry = "{:01d}D {:02d}H {:02d}M".format(rt.days, rt.hours,
-                    rt.minutes)
-            labels.missions[id]["Expiry"] = {"textvariable":
-                tk.StringVar(value=expiry)}
+        dt = expiry_time - current_time
+        if dt <= 0:
+            expiry = "Past Due"
+        else:
+            rt = relativedelta(seconds=dt)
+            expiry = "{:01d}D {:02d}H {:02d}M".format(rt.days, rt.hours,
+                rt.minutes)
+        return expiry
+    
+    @staticmethod
+    def update_faction_label_text(name: str, faction: FactionMissions, labels: DynamicalLabels):
+
+        progress = str(faction.Progress) + "/" + str(faction.KillCount)
+        labels.factions[name]["mission_count"]["textvariable"].set(
+            faction.mission_count)
+        labels.factions[name]["Progress"]["textvariable"].set(progress)

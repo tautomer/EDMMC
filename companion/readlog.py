@@ -2,11 +2,14 @@ import os
 import sys
 import glob
 import json
-from tkinter import Variable
 # import ujson as json
 from typing import Dict, IO, Union
 from dateutil.parser import parse
-from constructors import MassacreMissions, FactionMissions, DynamicalLabels, Labels
+from constructors import MassacreMissions, FactionMissions, DynamicalLabels
+from constructors import Labels
+from gui import CompanionGUI
+
+cg = CompanionGUI()
 class ReadLog:
 
     def __init__(self):
@@ -101,7 +104,6 @@ class ReadLog:
         # check all new mission and bounty events
         self.read_event(events[cut:], missions, initialized)
         # assign values to the labels
-        Labels.variable_labels(missions, self.label_texts)
         return initialized
 
     def find_resumed_missions(self, event: dict):
@@ -154,41 +156,50 @@ class ReadLog:
         # current Progress
         # TODO: this should be also read from input or history
         mission["Progress"] = 0
-        faction = mission["Faction"]
+        faction_name = mission["Faction"]
         # add faction-specific information
-        if faction not in massacre_missions.factions:
-            # there are other massacre missions whose targets are NOT pirates
-            if mission["TargetType_Localised"] == "Pirates":
-                massacre_missions.factions[faction] = FactionMissions(1,
-                    mission["KillCount"], mission["Progress"], [id], [], [], [])
-            else:
-                massacre_missions.factions[faction] = FactionMissions(1,
-                    0, 0, [], [], [], [id])
+        try:
+            faction = massacre_missions.factions[faction_name]
+        except KeyError:
+            faction = FactionMissions(0, 0, 0, [], [], [], [])
+            massacre_missions.factions[faction_name] = faction
+            # create dynamical label text for this faction
+            Labels.faction_label_text_setup(faction_name, self.label_texts)
+            cg.add_faction(faction_name, self.label_texts.factions[faction_name])
+        # only deal with missions with priates as the target
+        if mission["TargetType_Localised"] == "Pirates":
+            faction.KillCount += mission["KillCount"]
+            faction.Progress += mission["Progress"]
+            faction.running.append(id)
         else:
-            if mission["TargetType_Localised"] == "Pirates":
-                massacre_missions.factions[faction].mission_count += 1
-                massacre_missions.factions[faction].KillCount += mission["KillCount"]
-                massacre_missions.factions[faction].Progress += mission["Progress"]
-                massacre_missions.factions[faction].running.append(id)
-            else:
-                massacre_missions.factions[faction].other.append(id)
+            faction.other.append(id)
+        massacre_missions.factions[faction_name].mission_count += 1
+        Labels.update_faction_label_text(faction_name, faction, self.label_texts)
         # add to id list for easy check
         massacre_missions.mission_ids.append(id)
         # add modified mission details to dictionary
         massacre_missions.missions[id] = mission
+        # add dynamical label text for this mission
+        Labels.mission_label_text_setup(id, mission, self.label_texts)
+        cg.add_mission(id, faction_name, self.label_texts.missions[id],
+            faction.mission_count)
 
     def mission_redirected(self, id: int, redirection: Dict, massacre_missions: MassacreMissions):
         # find mission details based on mission ID
         mission = massacre_missions.missions[id]
+        faction_name = mission["Faction"]
         # update mission status
         mission["Status"] = "Done"
         mission["DestinationSystem"] = redirection["NewDestinationSystem"]
         mission["DestinationStation"] = redirection["NewDestinationStation"]
+        self.label_texts.missions[id]["Status"]["textvariable"].set("Done")
+        self.label_texts.missions[id]["System"]["textvariable"].set(mission["DestinationSystem"])
+        self.label_texts.missions[id]["Station"]["textvariable"].set(mission["DestinationStation"])
         # check progess and kill counts
         progress = mission["Progress"]
         kill_count = mission["KillCount"]
         # find mission faction info
-        faction = massacre_missions.factions[mission["Faction"]]
+        faction = massacre_missions.factions[faction_name]
         # update faction info
         faction.running.remove(id)
         faction.ready.append(id)
@@ -199,7 +210,10 @@ class ReadLog:
                 "based on ED log.")
             delta = kill_count - progress
             mission["Progress"] = kill_count
+            progress = str(mission["Progress"]) + "/" + str(kill_count)
+            self.label_texts.missions[id]["Progress"]["textvariable"].set(progress)
             faction.Progress += delta
+            Labels.update_faction_label_text(faction_name, faction, self.label_texts)
     
     # TODO: seems `completed` and `failed` can be merged
     def mission_completed(self, id: int, massacre_missions: MassacreMissions):
@@ -207,6 +221,7 @@ class ReadLog:
         mission = massacre_missions.missions[id]
         # update mission status
         mission["Status"] = "Claimed"
+        self.label_texts.missions[id]["Status"]["textvariable"].set("Claimed")
         # find mission faction info
         faction = massacre_missions.factions[mission["Faction"]]
         # update faction info
@@ -219,6 +234,7 @@ class ReadLog:
         mission = massacre_missions.missions[id]
         # update mission status
         mission["Status"] = status
+        self.label_texts.missions[id]["Status"]["textvariable"].set(status)
         # find mission faction info
         faction = massacre_missions.factions[mission["Faction"]]
         # update faction info
@@ -236,10 +252,14 @@ class ReadLog:
         massacre_missions.total_bounty_claimed += bounty["TotalReward"]
         if bounty["VictimFaction"] == massacre_missions.target_faction:
             massacre_missions.target_faction_pirates_killed += 1
-            for i in massacre_missions.factions.values():
-                if len(i.running) != 0:
-                    i.Progress += 1
-                    massacre_missions.missions[i.running[0]]["Progress"] += 1
+            for k, v in massacre_missions.factions.items():
+                if len(v.running) != 0:
+                    v.Progress += 1
+                    Labels.update_faction_label_text(k, v, self.label_texts)
+                    mission = massacre_missions.missions[v.running[0]]
+                    mission["Progress"] += 1
+                    progress = str(mission["Progress"]) + "/" + str(mission["KillCount"])
+                    self.label_texts.missions[v.running[0]]["Progress"]["textvariable"].set(progress)
 
     def read_event(self, events: Union[IO, list], missions: MassacreMissions, initialized: bool):    
         # initialize missions
@@ -271,7 +291,8 @@ class ReadLog:
                     self.check_ed_status(event)
 
     def discard_past_missions(self, missions: MassacreMissions):
-        for f in missions.factions.values():
+        rmlist = []
+        for k, f in missions.factions.items():
             if len(f.past) != 0:
                 for id in f.past:
                     details = missions.missions.pop(id)
@@ -281,7 +302,13 @@ class ReadLog:
                     f.KillCount -= kill_count 
                     f.Progress -= progress
                     f.mission_count -= 1
+                    rmlist.append(id)
                 f.past.clear()
+            if f.mission_count == 0:
+                cg.destroy_faction(k)
+            else:
+                Labels.update_faction_label_text(k, f, self.label_texts)
+        rmlist = cg.destroy_missions(rmlist)
         self.past_missions = False
 
     def update(self, missions: MassacreMissions, initialized: bool):
@@ -297,6 +324,9 @@ class ReadLog:
                 self.check_ed_status(new_events[-1])
                 self.read_event(new_events, missions, initialized)
             self.cleanup(missions)
+        for k, v in missions.missions.items():
+            expiry = Labels.calculate_expiry_time(v["Expiry"])
+            self.label_texts.missions[k]["Expiry"]["textvariable"].set(expiry)
 
     def cleanup(self, missions: MassacreMissions):
         if self.past_missions:
