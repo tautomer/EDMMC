@@ -23,28 +23,38 @@ class DynamicGrid(tk.Frame):
 class CompanionGUI:
     
     def __init__(self):
+        self.theme = {
+            "window_bg": "#c8d6e5",
+            "faction_frame_bg": "#c8d6e5",
+            "faction_label_bg": "#c8d6e5",
+            "faction_label_fg": "#222f3e",
+            "tab_frame_bg": "#8395a7",
+            "tab_label_bg": "#8395a7",
+            "tab_label_fg": "#130f40",
+            "mission_frame_bg": ["#dfe4ea", "#ced6e0"],
+            "mission_label_bg": ["#dfe4ea", "#ced6e0"],
+            "mission_label_fg": ["#222f3e", "#2f3542"],
+            "statusbar_frame_bg": "#57606f",
+            "statusbar_label_bg": "#57606f",
+            "statusbar_label_fg": "#dff9fb",
+            "button_bg": "#c8d6e5",
+            "button_fg": "#222f3e"
+        }
         self.window = tk.Tk()
         self.font = font.nametofont("TkDefaultFont")
         self.fontsize = self.font.config(size=14)
         self.window.title("Elite: Dangerous Massacre Missions Companion")
         self.window.minsize(width=960, height=540)
         self.window.resizable(True, True)
-        self.faction_labels = ["mission_count", "Progress", "KillCount"]
-        self.faction_texts = ["Mission Count: ", "Progress: ", "Kill Count "]
-        # TODO: change this to a dictionary, also allows for more options
-        self.mission_label_text = ["System", "Station", "Target Faction",
-            "Target Type", "Wing Mission", "Status", "Expiry", "Progress"]
-        self.mission_label_index = [0, 1, 2, 3, 5, 6, 7, 4]
-        self.mission_label_key = ["DestinationSystem", "DestinationStation", 
-            "TargetFaction", "TargetType_Localised", "Wing", "Status", "Expiry"]
-        self.mission_label_width = [100, 100, 120, 60, 60, 60, 100, 60]
+        self.window.config(bg=self.theme["window_bg"])
         self.factions = {}
         self.missions = {}
     
     def add_faction(self, name: str, faction: dict):
         # add a new frame for the current faction
-        frame = tk.Frame(master=self.window, relief=tk.RAISED, border=2, pady=3)
-        frame.pack(fill=tk.BOTH)
+        frame = tk.Frame(self.window, relief=tk.FLAT, bd=2, pady=3,
+            bg=self.theme["faction_frame_bg"])
+        frame.pack(fill=tk.Y, anchor=tk.W)
         # add it to the dictionary
         self.factions[name] = [frame]
 
@@ -52,77 +62,34 @@ class CompanionGUI:
         i = 0
         for d in Labels.faction_labels:
             frame.columnconfigure(i, weight=1)
-            label = tk.Label(master=frame, text=d["text"], relief=tk.SUNKEN,
-                borderwidth=2, width=d["len"], justify=tk.LEFT)
+            # set the fixed part of the labels
+            label = tk.Label(frame, text=d["text"], justify=tk.LEFT, bd=2,
+                relief=tk.FLAT, width=d["len"],
+                bg=self.theme["faction_label_bg"],
+                fg=self.theme["faction_label_fg"])
             label.grid(row=0, column=i, sticky="w")
             self.factions[name].append(label)
             i += 1
             frame.columnconfigure(i, minsize=d["minsize"], weight=1)
-            label = tk.Label(master=frame, relief=tk.RIDGE, borderwidth=2,
-                justify=tk.LEFT, wraplength=275, **faction[d["key"]])
-            label.grid(row=0, column=i, sticky="w")
+            # set the varying part 
+            label = tk.Label(frame, relief=tk.FLAT, bd=2, justify=tk.LEFT,
+                wraplength=275, bg=self.theme["faction_label_bg"],
+                fg=self.theme["faction_label_fg"], **faction[d["key"]])
+            label.grid(row=0, column=i, sticky=tk.W)
             self.factions[name].append(label)
             i += 1
 
         # build the title bar (what should be a proper name for this?) for this faction
-        frame = tk.Frame(master=self.window, relief=tk.RAISED, border=2,
-            padx=10, pady=3)
+        frame = tk.Frame(self.window, relief=tk.FLAT, bd=2, pady=0,
+            bg=self.theme["tab_frame_bg"])
         frame.pack(fill=tk.BOTH)
         self.factions[name].append(frame)
         for i, d in enumerate(Labels.mission_labels):
             frame.columnconfigure(i, minsize=d["width"], weight=1)
-            label = tk.Label(master=frame, text=d["title"], relief=tk.RIDGE,
-                borderwidth=2)
-            label.grid(row=0, column=i, sticky="we")
+            label = tk.Label(frame, text=d["title"], relief=tk.SOLID, bd=0,
+                bg=self.theme["tab_label_bg"], fg=self.theme["tab_label_fg"])
+            label.grid(row=0, column=i, sticky=tk.NSEW, padx=5)
             self.factions[name].append(label)
-
-        # # label "faction name:"
-        # label = tk.Label(master=frame, text="Faction Name: ", relief=tk.FLAT,
-        #     borderwidth=2, justify=tk.LEFT)
-        # self.factions[name].append(label)
-        # label.grid(row=0, column=0, sticky="w")
-        # # actual name
-        # label = tk.Label(master=frame, text=name, relief=tk.FLAT, 
-        #     wraplength=175, justify=tk.LEFT)
-        # self.factions[name].append(label)
-        # label.grid(row=0, column=1, sticky="w")
-
-        # # show the faction's mission counts
-        # faction_dict = vars(faction)
-        # content = "Mission Count: " + str(faction_dict["mission_count"])
-        # label = tk.Label(master=frame, text=content, relief=tk.FLAT,
-        #     borderwidth=2, justify=tk.LEFT)
-        # self.factions[name].append(label)
-        # label.grid(row=0, column=2, sticky="w")
-
-        # # faction specific total progress
-        # content = "Progress: " + str(faction_dict["Progress"]) + "/" + str(
-        #     faction_dict["KillCount"])
-        # label = tk.Label(master=frame, text=content, relief=tk.FLAT,
-        #     borderwidth=2, justify=tk.LEFT)
-        # self.factions[name].append(label)
-        # label.grid(row=0, column=3, sticky="w")
-
-        # # title bar for this faction's missions
-        # frame = tk.Frame(master=self.window, relief=tk.RAISED, border=2,
-        #     padx=10, pady=3)
-        # frame.pack(fill=tk.BOTH)
-        # self.factions[name].append(frame)
-
-        # for idx, txt in enumerate(self.mission_label_text):
-        #     # actual index in columns
-        #     i = self.mission_label_index[idx]
-        #     # width
-        #     w = self.mission_label_width[idx]
-        #     # setup column
-        #     frame.columnconfigure(i, minsize=w, weight=1)
-        #     # add label
-        #     label = tk.Label(master=frame, text=txt, relief=tk.RIDGE,
-        #         borderwidth=2)
-        #     # append to list
-        #     self.factions[name].append(label)
-        #     # add to grid
-        #     label.grid(row=0, column=i, sticky="we")
 
     def add_mission(self, id: str, name: str, mission: dict, mission_idx:int):
     # def add_mission(self, name: str, mission: dict, mission_idx:int):
@@ -134,9 +101,11 @@ class CompanionGUI:
         # add all labels except progress
         i = 0
         for k, v in mission.items():
-            label = tk.Label(master=parent, relief=tk.FLAT, borderwidth=2, 
-                **v)
-            label.grid(row=mission_idx, column=i, sticky="we")
+            j = mission_idx % 2
+            label = tk.Label(parent, relief=tk.FLAT, bd=0,
+                bg=self.theme["mission_label_bg"][j],
+                fg=self.theme["mission_label_fg"][j], **v)
+            label.grid(row=mission_idx, column=i, sticky="nswe")
             self.missions[id].append(label)
             i += 1
 
@@ -150,11 +119,24 @@ class CompanionGUI:
                 w.destroy()
         return []
 
-    def status_bar(self):
-        frame = tk.Frame(master=self.window, relief=tk.RAISED, border=2, pady=3)
-        frame.pack(fill=tk.BOTH, anchor="w")
-        cali = tk.Button(master=frame, text="Calibrate")
-        cali.pack(anchor="e", side="right")
-        status = tk.Label(master=frame, text="ED client is not running")
-        status.pack(anchor="w", side="right")
+    def status_bar(self, status: tk.StringVar):
+        bar = tk.Frame(self.window, relief=tk.RAISED, bd=0,
+            bg=self.theme["statusbar_frame_bg"])
+        bar.pack(fill=tk.BOTH, side=tk.BOTTOM) 
+        notif = tk.Frame(bar, bg=self.theme["statusbar_frame_bg"])
+        notif.pack(side="left")
+        buttons = tk.Frame(bar, bg=self.theme["statusbar_frame_bg"])
+        buttons.pack(side="right")
+        status = tk.Label(notif, textvariable=status, anchor="w",
+            bg=self.theme["statusbar_label_bg"],
+            fg=self.theme["statusbar_label_fg"])
+        status.pack()
+        cali = tk.Button(buttons, text="Calibrate", anchor="e",
+            relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
+            fg=self.theme["button_fg"])
+        cali.pack(side="right", padx=5)
+        setting = tk.Button(buttons, text="Settings", anchor="e",
+            relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
+            fg=self.theme["button_fg"])
+        setting.pack(side="right")
         pass

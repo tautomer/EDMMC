@@ -31,6 +31,7 @@ class MassacreMissions:
 class DynamicalLabels:
     factions: Dict[str, Dict[str, tk.StringVar]]
     missions: Dict[str, Dict[str, tk.StringVar]]
+    ed_status: tk.StringVar
 
 class Labels:
     faction_labels = [ {

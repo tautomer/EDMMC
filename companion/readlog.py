@@ -7,7 +7,7 @@ from typing import Dict, IO, Union
 from dateutil.parser import parse
 from constructors import MassacreMissions, FactionMissions, DynamicalLabels
 from constructors import Labels
-from gui import CompanionGUI
+from gui import CompanionGUI, tk
 
 cg = CompanionGUI()
 class ReadLog:
@@ -26,7 +26,7 @@ class ReadLog:
         self.mission_id = {}
         self.rm_key_list = ["event", "Name", "LocalisedName", "Influence",
             "Reputation"]
-        self.label_texts = DynamicalLabels({}, {})
+        self.label_texts = DynamicalLabels({}, {}, tk.StringVar())
 
     def check_ed_log_path(self):
         """find ED log path and client status
@@ -53,6 +53,7 @@ class ReadLog:
                 self.current_log.close()
             self.current_log = open(latest, "r")
             self.is_game_running = True
+            self.label_texts.ed_status.set("ED client is running")
         # TODO: is there a saner way to do this?
         if not initialized:
             ctime = os.path.getctime(latest)
@@ -71,8 +72,10 @@ class ReadLog:
         # check if the game is running
         if '"event":"Shutdown"' == event[38:56]:
             self.is_game_running = False
+            self.label_texts.ed_status.set("ED client is NOT running")
         else:
             self.is_game_running = True
+            self.label_texts.ed_status.set("ED client is running")
 
     def initialize(self, log: IO, missions: MassacreMissions, initialized: bool):
         # have to store the current log in RAM
@@ -104,6 +107,7 @@ class ReadLog:
         # check all new mission and bounty events
         self.read_event(events[cut:], missions, initialized)
         # assign values to the labels
+        cg.status_bar(self.label_texts.ed_status)
         return initialized
 
     def find_resumed_missions(self, event: dict):
