@@ -3,6 +3,8 @@
 
 ## A GUI helper for stacking pirates massacre missions in Elite: Dangerous
 
+![running](media/example.gif)
+
 ### What is EDMMC
 
 If you have ever stacked pirates massacre missions in Elite: Dangerous, you

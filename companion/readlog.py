@@ -20,6 +20,7 @@ class ReadLog:
         self.log_7days = []
         self.ed_process_name = "EliteDangerous64.exe"
         self.is_game_running = False
+        self.sanity = True
         self.update_counter = 0
         self.past_missions = False
         self.current_missions = {}
@@ -123,6 +124,9 @@ class ReadLog:
                 break
         if not initialized:
             raise RuntimeError
+        elif self.label_texts.current_log_status.get() == "Waiting for log file update":
+            self.label_texts.current_log_status.set("Current log file: " +
+                os.path.relpath(self.current_log_name, self.log_path))
         # every entry before the restarting will be useless
         cut = len(events) - ln + 1
         # check possible mission events before resume in current log
