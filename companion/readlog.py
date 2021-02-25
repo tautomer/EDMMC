@@ -1,6 +1,6 @@
 import os
-import sys
 import glob
+import psutil
 import json
 # import ujson as json
 from typing import Dict, IO, Union
@@ -18,18 +18,19 @@ class ReadLog:
         self.current_log_name = ""
         self.log_time = 0
         self.log_7days = []
+        self.ed_process_name = "EliteDangerous64.exe"
         self.is_game_running = False
-        self.sanity = True
+        self.update_counter = 0
         self.past_missions = False
         self.current_missions = {}
         self.current_massacre_missions = []
         self.mission_id = {}
         self.rm_key_list = ["event", "Name", "LocalisedName", "Influence",
             "Reputation"]
-        self.label_texts = DynamicalLabels({}, {}, tk.StringVar())
+        self.label_texts = DynamicalLabels({}, {}, tk.StringVar(), tk.StringVar())
 
     def check_ed_log_path(self):
-        """find ED log path and client status
+        """find ED log path
         """
         home = os.path.expanduser("~")
         ed_save = home + "\Saved Games\Frontier Developments\Elite Dangerous"
@@ -54,6 +55,8 @@ class ReadLog:
             self.current_log = open(latest, "r")
             self.is_game_running = True
             self.label_texts.ed_status.set("ED client is running")
+            self.label_texts.current_log_status.set("Current log file: " +
+                os.path.relpath(self.current_log_name, self.log_path))
         # TODO: is there a saner way to do this?
         if not initialized:
             ctime = os.path.getctime(latest)
@@ -69,7 +72,12 @@ class ReadLog:
             self.log_7days.reverse()
 
     def check_ed_status(self, event: str):
-        # check if the game is running
+        """ Check if the game client is running.
+            This method is unsafe. `check_process` is used for a backup.
+
+        Args:
+            event (str): log entry
+        """
         if '"event":"Shutdown"' == event[38:56]:
             self.is_game_running = False
             self.label_texts.ed_status.set("ED client is NOT running")
@@ -77,13 +85,28 @@ class ReadLog:
             self.is_game_running = True
             self.label_texts.ed_status.set("ED client is running")
 
+    def check_process(self):
+        """ Check if the client is running based on Win32 processes.
+            When the game crashes, I can't know this from the log file.
+            Since this method can be more expensive, it will only be run when
+            there isn't any update in log file for 5 iterations and the game is
+            "apparently" running.
+        """
+        if self.ed_process_name in (p.name() for p in psutil.process_iter()):
+            self.is_game_running = True
+            self.label_texts.ed_status.set("ED client is running")
+        else:
+            self.is_game_running = False
+            self.label_texts.ed_status.set("ED client is NOT running")
+        self.update_counter = 0
+
     def initialize(self, log: IO, missions: MassacreMissions, initialized: bool):
+        self.check_process()
         # have to store the current log in RAM
         # TODO: possbily avoid this way?
         events = log.readlines()
         if not events:
             raise RuntimeError
-        self.check_ed_status(events[-1])
         ln = 0
         # find the latest login event for existing missions
         for line in reversed(events):
@@ -107,7 +130,6 @@ class ReadLog:
         # check all new mission and bounty events
         self.read_event(events[cut:], missions, initialized)
         # assign values to the labels
-        cg.status_bar(self.label_texts.ed_status)
         return initialized
 
     def find_resumed_missions(self, event: dict):
@@ -317,7 +339,6 @@ class ReadLog:
 
     def update(self, missions: MassacreMissions, initialized: bool):
         # only check if there are new journals when ED is not running
-        # FIXME: this way isn't able to handle game crash
         if not self.is_game_running:
             self.find_journals(initialized)
         else:
@@ -327,6 +348,10 @@ class ReadLog:
             if len(new_events) != 0:
                 self.check_ed_status(new_events[-1])
                 self.read_event(new_events, missions, initialized)
+            else:
+                self.update_counter += 1
+                if self.update_counter == 5:
+                    self.check_process()
             self.cleanup(missions)
         for k, v in missions.missions.items():
             expiry = Labels.calculate_expiry_time(v["Expiry"])

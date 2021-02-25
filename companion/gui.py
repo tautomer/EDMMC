@@ -24,15 +24,17 @@ class CompanionGUI:
     
     def __init__(self):
         self.theme = {
+            "font": "Calibri",
+            "fontsize": [14, 13, 13, 9],
             "window_bg": "#c8d6e5",
             "faction_frame_bg": "#c8d6e5",
             "faction_label_bg": "#c8d6e5",
-            "faction_label_fg": "#222f3e",
+            "faction_label_fg": "#353b48",
             "tab_frame_bg": "#8395a7",
             "tab_label_bg": "#8395a7",
-            "tab_label_fg": "#130f40",
-            "mission_frame_bg": ["#dfe4ea", "#ced6e0"],
-            "mission_label_bg": ["#dfe4ea", "#ced6e0"],
+            "tab_label_fg": "#f7f1e3",
+            "mission_frame_bg": ["#dfe6e9", "#b2bec3"],
+            "mission_label_bg": ["#dfe6e9", "#b2bec3"],
             "mission_label_fg": ["#222f3e", "#2f3542"],
             "statusbar_frame_bg": "#57606f",
             "statusbar_label_bg": "#57606f",
@@ -42,7 +44,13 @@ class CompanionGUI:
         }
         self.window = tk.Tk()
         self.font = font.nametofont("TkDefaultFont")
-        self.fontsize = self.font.config(size=14)
+        self.font.config(size=self.theme["fontsize"][0])
+        self.font.config(family=self.theme["font"])
+        self.title_font = (self.theme["font"], self.theme["fontsize"][0],
+            "bold")
+        self.tab_font = (self.theme["font"], self.theme["fontsize"][1])
+        self.mission_font = (self.theme["font"], self.theme["fontsize"][2])
+        self.status_font = (self.theme["font"], self.theme["fontsize"][3])
         self.window.title("Elite: Dangerous Massacre Missions Companion")
         self.window.minsize(width=960, height=540)
         self.window.resizable(True, True)
@@ -64,7 +72,7 @@ class CompanionGUI:
             frame.columnconfigure(i, weight=1)
             # set the fixed part of the labels
             label = tk.Label(frame, text=d["text"], justify=tk.LEFT, bd=2,
-                relief=tk.FLAT, width=d["len"],
+                relief=tk.FLAT, width=d["len"], font=self.title_font,
                 bg=self.theme["faction_label_bg"],
                 fg=self.theme["faction_label_fg"])
             label.grid(row=0, column=i, sticky="w")
@@ -74,7 +82,8 @@ class CompanionGUI:
             # set the varying part 
             label = tk.Label(frame, relief=tk.FLAT, bd=2, justify=tk.LEFT,
                 wraplength=275, bg=self.theme["faction_label_bg"],
-                fg=self.theme["faction_label_fg"], **faction[d["key"]])
+                fg=self.theme["faction_label_fg"], font=self.title_font,
+                **faction[d["key"]])
             label.grid(row=0, column=i, sticky=tk.W)
             self.factions[name].append(label)
             i += 1
@@ -87,7 +96,8 @@ class CompanionGUI:
         for i, d in enumerate(Labels.mission_labels):
             frame.columnconfigure(i, minsize=d["width"], weight=1)
             label = tk.Label(frame, text=d["title"], relief=tk.SOLID, bd=0,
-                bg=self.theme["tab_label_bg"], fg=self.theme["tab_label_fg"])
+                bg=self.theme["tab_label_bg"], fg=self.theme["tab_label_fg"],
+                font=self.tab_font)
             label.grid(row=0, column=i, sticky=tk.NSEW, padx=5)
             self.factions[name].append(label)
 
@@ -102,8 +112,8 @@ class CompanionGUI:
         i = 0
         for k, v in mission.items():
             j = mission_idx % 2
-            label = tk.Label(parent, relief=tk.FLAT, bd=0,
-                bg=self.theme["mission_label_bg"][j],
+            label = tk.Label(parent, relief=tk.FLAT, bd=0, 
+                font=self.mission_font, bg=self.theme["mission_label_bg"][j],
                 fg=self.theme["mission_label_fg"][j], **v)
             label.grid(row=mission_idx, column=i, sticky="nswe")
             self.missions[id].append(label)
@@ -119,7 +129,7 @@ class CompanionGUI:
                 w.destroy()
         return []
 
-    def status_bar(self, status: tk.StringVar):
+    def status_bar(self, ed: tk.StringVar, log: tk.StringVar):
         bar = tk.Frame(self.window, relief=tk.RAISED, bd=0,
             bg=self.theme["statusbar_frame_bg"])
         bar.pack(fill=tk.BOTH, side=tk.BOTTOM) 
@@ -127,16 +137,20 @@ class CompanionGUI:
         notif.pack(side="left")
         buttons = tk.Frame(bar, bg=self.theme["statusbar_frame_bg"])
         buttons.pack(side="right")
-        status = tk.Label(notif, textvariable=status, anchor="w",
-            bg=self.theme["statusbar_label_bg"],
+        ed_status = tk.Label(notif, textvariable=ed, font=self.status_font,
+            justify=tk.LEFT, bg=self.theme["statusbar_label_bg"],
             fg=self.theme["statusbar_label_fg"])
-        status.pack()
-        cali = tk.Button(buttons, text="Calibrate", anchor="e",
-            relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
-            fg=self.theme["button_fg"])
-        cali.pack(side="right", padx=5)
-        setting = tk.Button(buttons, text="Settings", anchor="e",
-            relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
-            fg=self.theme["button_fg"])
-        setting.pack(side="right")
+        ed_status.pack(anchor="w")
+        log_status = tk.Label(notif, textvariable=log, font=self.status_font,
+            justify=tk.LEFT, bg=self.theme["statusbar_label_bg"],
+            fg=self.theme["statusbar_label_fg"])
+        log_status.pack(anchor="w")
+        # cali = tk.Button(buttons, text="Calibrate", anchor="e",
+        #     relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
+        #     fg=self.theme["button_fg"])
+        # cali.pack(side="right", padx=5)
+        # setting = tk.Button(buttons, text="Settings", anchor="e",
+        #     relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
+        #     fg=self.theme["button_fg"])
+        # setting.pack(side="right")
         pass

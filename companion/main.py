@@ -6,32 +6,38 @@ import time
 # sys.path.append(dir_root)
 import json
 from readlog import ReadLog, cg
-from constructors import MassacreMissions
+from constructors import MassacreMissions, Labels
 
 # FIXME: this way of restarting only works if this program is run alongside with ED every time
 # with open("test_log.txt", "r") as f:
 #     missions = MassacreMissions.from_json(f.read())
 rl = ReadLog()
-missions = MassacreMissions([], {}, "", 0, 0, 0, {})
-initialized = False
-rl.check_ed_log_path()
-rl.find_journals(initialized)
-while True:
-    try:
-        initialized = rl.initialize(rl.current_log, missions, initialized)
-    except RuntimeError:
-        # TODO: also need check this when a new log is found
-        os.system('cls') 
-        print("The current log is empty. Waiting for log updates when the game is continued.")
-        time.sleep(3)
-    else:
-        break
+class MassacreCompanion:
 
-# rl.sanity_check(missions)
-def update():
-    rl.update(missions, initialized)
-    cg.window.after(3000, update)
-cg.window.after(3000, update)
-cg.window.mainloop()
-with open("test_log.txt", "w") as out:
-    json.dump(missions.to_dict(), out, indent=4)
+    def __init__(self):
+        self.initialized = False
+        self.missions = MassacreMissions([], {}, "", 0, 0, 0, {})
+        rl.check_ed_log_path()
+        cg.status_bar(rl.label_texts.ed_status, rl.label_texts.current_log_status)
+
+    def update(self):
+        if self.initialized:
+            rl.update(self.missions, self.initialized)
+        else:
+            rl.find_journals(self.initialized)
+            try:
+                self.initialized = rl.initialize(rl.current_log, self.missions,
+                    self.initialized)
+            except RuntimeError:
+                rl.label_texts.current_log_status.set("Waiting for log file update")
+                time.sleep(3)
+        cg.window.after(3000, self.update)
+
+    def run(self):
+        cg.window.after(3000, self.update)
+        cg.window.mainloop()
+        with open("test_log.txt", "w") as out:
+            json.dump(self.missions.to_dict(), out, indent=4)
+
+mc = MassacreCompanion()
+mc.run()
