@@ -5,53 +5,39 @@ import time
 # dir_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 # sys.path.append(dir_root)
 import json
-from readlog import ReadLog
-from readlog import MassacreMissions
+from readlog import ReadLog, cg
+from constructors import MassacreMissions, Labels
 
-rl = ReadLog()
 # FIXME: this way of restarting only works if this program is run alongside with ED every time
 # with open("test_log.txt", "r") as f:
 #     missions = MassacreMissions.from_json(f.read())
-missions = MassacreMissions([], {}, "", 0, 0, 0, {})
-initialized = False
-rl.check_ed_log_path()
-rl.find_journals(initialized)
-while True:
-    try:
-        initialized = rl.initialize(rl.current_log, missions, initialized)
-    except RuntimeError:
-        # TODO: also need check this when a new log is found
-        os.system('cls') 
-        print("The current log is empty. Waiting for log updates when the game is continued.")
-        time.sleep(3)
-    else:
-        break
+rl = ReadLog()
+class MassacreCompanion:
 
-# rl.sanity_check(missions)
-rl.update(missions, initialized)
-for k, v in missions.factions.items():
-    print(v.progress, v.kill_count, k, v.mission_count)
-    for i in v.running:
-        print("    ", missions.missions[i]["Progress"], missions.missions[i]["KillCount"])
-    # print(k, v.mission_count, v.progress, v.kill_count, v.running, v.past)
-while True:
-    try:
-        rl.update(missions, initialized)
-        os.system('cls') 
-        for k,v in missions.factions.items():
-            if v.mission_count != 0:
-                print(k, v.mission_count, v.progress, v.kill_count)
-            for i in v.running:
-                print("    ", missions.missions[i]["Wing"], missions.missions[i]["Progress"], missions.missions[i]["KillCount"])
+    def __init__(self):
+        self.initialized = False
+        self.missions = MassacreMissions([], {}, "", 0, 0, 0, {})
+        rl.check_ed_log_path()
+        cg.status_bar(rl.label_texts.ed_status, rl.label_texts.current_log_status)
 
-        print("Target faction pirates killed:", missions.target_faction_pirates_killed)
-        print("Total pirates killed:", missions.pirates_killed)
-        # TODO: larger interval if game isn't running. this value should be configurable ultimately
-        if not rl.is_game_running:
-            print("ED client is not running currently.")
-        time.sleep(3)
-    except KeyboardInterrupt:
-        # TODO: wrap this part in a function, together with reading
+    def update(self):
+        if self.initialized:
+            rl.update(self.missions, self.initialized)
+        else:
+            rl.find_journals(self.initialized)
+            try:
+                self.initialized = rl.initialize(rl.current_log, self.missions,
+                    self.initialized)
+            except RuntimeError:
+                rl.label_texts.current_log_status.set("Waiting for log file update")
+                time.sleep(3)
+        cg.window.after(3000, self.update)
+
+    def run(self):
+        cg.window.after(3000, self.update)
+        cg.window.mainloop()
         with open("test_log.txt", "w") as out:
-            json.dump(missions.to_dict(), out, indent=4)
-        break
+            json.dump(self.missions.to_dict(), out, indent=4)
+
+mc = MassacreCompanion()
+mc.run()
