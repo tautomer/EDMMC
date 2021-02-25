@@ -1,7 +1,9 @@
 
-# EDMassacreMissionCompanion
+# EDMMC (ED Massacre Mission Companion)
 
 ## A GUI helper for stacking pirates massacre missions in Elite: Dangerous
+
+Example of a simulated stacking run with my previous log.
 
 ![running](media/example.gif)
 
@@ -18,7 +20,7 @@ More specifically, it's difficult to know
 As a result, I had to use Excel to get my missions organized and you know it
 sucks!
 
-So here is `EDMassacreMissionCompanion`. Before I get started, there are two
+So here is `EDMMC`. Before I get started, there are two
 limitations in this program.
 
 * I'm no professional code. More importantly, I have never built GUI before, so

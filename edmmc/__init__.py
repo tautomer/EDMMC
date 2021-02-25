@@ -1,4 +1,4 @@
-"""Top-level package for MaccacreCompanion."""
+"""Top-level package for EDMassacreMissionCompanion."""
 
 __author__ = """Xinyang Li"""
 __email__ = 'soybeanyoung@gmail.com'
