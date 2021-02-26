@@ -99,7 +99,6 @@ class ReadLog:
         else:
             self.is_game_running = False
             self.label_texts.ed_status.set("ED client is NOT running")
-        self.update_counter = 0
 
     def initialize(self, log: IO, missions: MassacreMissions, initialized: bool):
         self.check_process()
@@ -356,6 +355,7 @@ class ReadLog:
                 self.update_counter += 1
                 if self.update_counter == 5:
                     self.check_process()
+                    self.update_counter = 0
             self.cleanup(missions)
         for k, v in missions.missions.items():
             expiry = Labels.calculate_expiry_time(v["Expiry"])

@@ -19,6 +19,7 @@ class MassacreCompanion:
         self.missions = MassacreMissions([], {}, "", 0, 0, 0, {})
         rl.check_ed_log_path()
         cg.status_bar(rl.label_texts.ed_status, rl.label_texts.current_log_status)
+        self.refresh_int = 3000
 
     def update(self):
         if self.initialized:
@@ -30,13 +31,12 @@ class MassacreCompanion:
                     self.initialized)
             except RuntimeError:
                 rl.label_texts.current_log_status.set("Waiting for log file update")
-                time.sleep(3)
-        cg.window.after(3000, self.update)
+        cg.window.after(self.refresh_int, self.update)
 
     def run(self):
-        cg.window.after(3000, self.update)
+        cg.window.after(self.refresh_int, self.update)
         cg.window.mainloop()
-        with open("test_log.txt", "w") as out:
+        with open("data/edmmc_history.txt", "w") as out:
             json.dump(self.missions.to_dict(), out, indent=4)
 
 mc = MassacreCompanion()

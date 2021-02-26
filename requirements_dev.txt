@@ -10,5 +10,5 @@ twine==1.14.0
 psutil==5.8.0
 dataclasses_json==0.5.2
 click==7.1.2
-dataclasses==0.8
+dataclasses==0.8; python_version < "3.7"
 python_dateutil==2.8.1

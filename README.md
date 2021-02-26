@@ -1,5 +1,5 @@
 
-# EDMMC (ED Massacre Mission Companion)
+# ![ico](edmmc/icons/mercenary_32x32.ico) EDMMC (ED Massacre Mission Companion)
 
 ## A GUI helper for stacking pirates massacre missions in Elite: Dangerous
 

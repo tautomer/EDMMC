@@ -43,6 +43,7 @@ class CompanionGUI:
             "button_fg": "#222f3e"
         }
         self.window = tk.Tk()
+        self.window.iconbitmap("./icons/mercenary.ico")
         self.font = font.nametofont("TkDefaultFont")
         self.font.config(size=self.theme["fontsize"][0])
         self.font.config(family=self.theme["font"])

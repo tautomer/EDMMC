@@ -3,6 +3,7 @@
 """The setup script."""
 
 from setuptools import setup, find_packages
+import py2exe
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
@@ -11,7 +12,7 @@ requirements = [
     'psutil==5.8.0',
     'dataclasses_json==0.5.2',
     'click==7.1.2',
-    'dataclasses==0.8',
+    'dataclasses==0.8; python_version < "3.7"',
     'python_dateutil==2.8.1',
 ]
 
@@ -30,7 +31,7 @@ test_requirements = [
     'psutil==5.8.0',
     'dataclasses_json==0.5.2',
     'click==7.1.2',
-    'dataclasses==0.8',
+    'dataclasses==0.8; python_version < "3.7"',
     'python_dateutil==2.8.1',
 ]
 
@@ -63,6 +64,16 @@ setup(
     keywords='edmmc',
     name='edmmc',
     packages=find_packages(include=['edmmc', 'edmmc.*']),
+    windows=[{'script': "edmmc/edmmc.py"}],
+    options={
+        'py2exe': {
+            'packages': [],
+            # 'dist_dir': 'dist', # The output folder
+            # 'compressed': True, # If you want the program to be compressed to be as small as possible
+            'includes': ['os', 'sys', 'time', 'json', 'tkinter', 'psutil', 'dataclasses_json',
+                'dataclasses', 'edmmc']
+        },
+    },
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
