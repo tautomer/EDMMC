@@ -162,7 +162,8 @@ class ReadLog:
                     with open(journal, 'r') as log:
                         self.read_event(log, massacre_missions, False)
         except ValueError:
-            print("Empty mission list")
+            # print("Empty mission list")
+            pass
 
     def mission_accepted(self, id: int, mission: dict, massacre_missions: MassacreMissions):
         # there could be multiple resumed sessions
@@ -235,8 +236,8 @@ class ReadLog:
         # if there is any discrepancy
         if progress != kill_count:
             self.sanity = False
-            print("Discrepancy in mission Progress detected. Update information "
-                "based on ED log.")
+            # print("Discrepancy in mission Progress detected. Update information "
+            #     "based on ED log.")
             delta = kill_count - progress
             mission["Progress"] = kill_count
             progress = str(mission["Progress"]) + "/" + str(kill_count)

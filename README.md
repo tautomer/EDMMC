@@ -156,10 +156,15 @@ improved.
 
 This package was created with [Cookiecutter][] and the
 [audreyr/cookiecutter-pypackage][] project template. The colors used in the
-built-in theme are taken from [flatuicolors][].
+built-in theme are taken from [flatuicolors][]. The logo of this program is
+adpated from [EDAssets][]. The executable is compiled with [PyInstaller][] with
+[upx][] enabled.
 
   [Cookiecutter]: https://github.com/audreyr/cookiecutter
   [audreyr/cookiecutter-pypackage]: https://github.com/audreyr/cookiecutter-pypackage
   [Elite Dangerous Player Journal]: https://elite-journal.readthedocs.io/en/latest/
   [watchdog]: https://pypi.org/project/watchdog/
   [flatuicolors]: https://flatuicolors.com/
+  [EDAssets]: https://edassets.org/
+  [PyInstaller]: http://www.pyinstaller.org/
+  [upx]: https://upx.github.io/
