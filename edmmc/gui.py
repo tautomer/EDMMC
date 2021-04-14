@@ -21,7 +21,7 @@ class DynamicGrid(tk.Frame):
         self.text.configure(state="disabled")
 
 class CompanionGUI:
-    
+    TotalReward = 0
     def __init__(self):
         self.theme = {
             "font": "Calibri",
@@ -58,6 +58,11 @@ class CompanionGUI:
         self.window.config(bg=self.theme["window_bg"])
         self.factions = {}
         self.missions = {}
+        frame = tk.Frame(self.window, bd=2, pady=3, bg=self.theme["faction_frame_bg"])
+        frame.pack(fill=tk.Y, anchor=tk.W)
+        
+        label = tk.Label(frame, text="Total Reward: " + f'{self.TotalReward:,}')
+        label.pack()
     
     def add_faction(self, name: str, faction: dict):
         # add a new frame for the current faction
@@ -102,10 +107,11 @@ class CompanionGUI:
             label.grid(row=0, column=i, sticky=tk.NSEW, padx=5)
             self.factions[name].append(label)
 
-    def add_mission(self, id: str, name: str, mission: dict, mission_idx:int):
+    def add_mission(self, id: str, name: str, mission: dict, mission_idx:int, reward: int):
+        
     # def add_mission(self, name: str, mission: dict, mission_idx:int):
         # retrieve the frame for missions
-        parent = self.factions[name][7]
+        parent = self.factions[name][9]
         # frame = tk.Frame(master=parent, relief=tk.FLAT, border=2, pady=3)
         # frame.grid(row=mission_idx, columnspan=8, sticky="nwse")
         self.missions[id] = []
@@ -119,6 +125,7 @@ class CompanionGUI:
             label.grid(row=mission_idx, column=i, sticky="nswe")
             self.missions[id].append(label)
             i += 1
+        #self.TotalReward += reward
 
     def destroy_faction(self, name: str):
         for w in self.factions[name]:

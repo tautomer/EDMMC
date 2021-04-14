@@ -52,12 +52,12 @@ class Labels:
             "text": "Progress:",
             "key": "Progress",
             "len": 8,
-            "minsize": 50
+            "minsize": 100
         } ,
         {
             "text": "Reward:",
             "key": "Reward",
-            "len": 8,
+            "len": 6,
             "minsize": 50
         } 
     ]
@@ -90,8 +90,8 @@ class Labels:
         "key:": "DestinationStation",
         "width": 75
     }, {
-        "title": "Reward",
-        "key:": "Reward",
+        "title": "Expiry",
+        "key:": "Expiry",
         "width": 100 
     }
     ]
@@ -101,6 +101,7 @@ class Labels:
         labels.factions[name] = {"name": {"text": name}}
         labels.factions[name]["mission_count"] = {"textvariable": tk.IntVar()}
         labels.factions[name]["Progress"] = {"textvariable": tk.StringVar()}
+        labels.factions[name]["Reward"] = {"textvariable": tk.IntVar()}
 
     @staticmethod
     def mission_label_text_setup(id: int, mission: dict, labels:DynamicalLabels):
@@ -144,3 +145,4 @@ class Labels:
         labels.factions[name]["mission_count"]["textvariable"].set(
             faction.mission_count)
         labels.factions[name]["Progress"]["textvariable"].set(progress)
+        labels.factions[name]["Reward"]["textvariable"].set(f'{faction.Reward:,}')

@@ -191,7 +191,7 @@ class ReadLog:
         try:
             faction = massacre_missions.factions[faction_name]
         except KeyError:
-            faction = FactionMissions(0, 0, 0, [], [], [], [])
+            faction = FactionMissions(0, 0, 0, 0, [], [], [], [])
             massacre_missions.factions[faction_name] = faction
             # create dynamical label text for this faction
             Labels.faction_label_text_setup(faction_name, self.label_texts)
@@ -205,6 +205,7 @@ class ReadLog:
         else:
             faction.other.append(id)
         massacre_missions.factions[faction_name].mission_count += 1
+        massacre_missions.factions[faction_name].Reward += mission["Reward"]
         Labels.update_faction_label_text(faction_name, faction, self.label_texts)
         # add to id list for easy check
         massacre_missions.mission_ids.append(id)
@@ -213,7 +214,7 @@ class ReadLog:
         # add dynamical label text for this mission
         Labels.mission_label_text_setup(id, mission, self.label_texts)
         cg.add_mission(id, faction_name, self.label_texts.missions[id],
-            faction.mission_count)
+            faction.mission_count, mission["Reward"])
 
     def mission_redirected(self, id: int, redirection: Dict, massacre_missions: MassacreMissions):
         # find mission details based on mission ID
@@ -332,6 +333,7 @@ class ReadLog:
                     progress = details["Progress"]
                     f.KillCount -= kill_count 
                     f.Progress -= progress
+                    f.Reward -= Reward
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()
