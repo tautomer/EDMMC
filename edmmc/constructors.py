@@ -11,6 +11,7 @@ class FactionMissions:
     mission_count: int 
     KillCount: int
     Progress: int
+    Reward: int
     running: List[int]
     ready: List[int]
     past: List[int]
@@ -52,6 +53,12 @@ class Labels:
             "key": "Progress",
             "len": 8,
             "minsize": 50
+        } ,
+        {
+            "text": "Reward:",
+            "key": "Reward",
+            "len": 8,
+            "minsize": 50
         } 
     ]
     mission_labels = [ {
@@ -83,8 +90,8 @@ class Labels:
         "key:": "DestinationStation",
         "width": 75
     }, {
-        "title": "Expiry",
-        "key:": "Expiry",
+        "title": "Reward",
+        "key:": "Reward",
         "width": 100 
     }
     ]

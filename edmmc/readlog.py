@@ -200,6 +200,7 @@ class ReadLog:
         if mission["TargetType_Localised"] == "Pirates":
             faction.KillCount += mission["KillCount"]
             faction.Progress += mission["Progress"]
+            faction.Reward += mission["Reward"]
             faction.running.append(id)
         else:
             faction.other.append(id)
