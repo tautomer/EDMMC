@@ -209,7 +209,7 @@ class ReadLog:
             faction.Progress += mission["Progress"]
             faction.Reward += mission["Reward"]
             self.master_data.total_reward += mission["Reward"]
-            self.label_texts.total_reward.set("Total Rewards: " + f'{self.master_data.total_reward:,}')
+            self.label_texts.total_reward.set("Total Rewards: " + f'{self.master_data.total_reward:,}' + " CR")
             faction.running.append(id)
         else:
             faction.other.append(id)
@@ -344,7 +344,7 @@ class ReadLog:
                     f.KillCount -= kill_count 
                     f.Progress -= progress
                     self.master_data.total_reward -= reward
-                    self.label_texts.total_reward.set("Total Rewards: " + f'{self.master_data.total_reward:,}')
+                    self.label_texts.total_reward.set("Total Rewards: " + f'{self.master_data.total_reward:,}' + " CR")
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()

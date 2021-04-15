@@ -52,6 +52,7 @@ class CompanionGUI:
         self.tab_font = (self.theme["font"], self.theme["fontsize"][1])
         self.mission_font = (self.theme["font"], self.theme["fontsize"][2])
         self.status_font = (self.theme["font"], self.theme["fontsize"][3])
+        self.total_font = (self.theme["font"], self.theme["fontsize"][0])
         self.window.title("Elite: Dangerous Massacre Missions Companion")
         self.window.minsize(width=960, height=540)
         self.window.resizable(True, True)
@@ -153,10 +154,10 @@ class CompanionGUI:
             justify=tk.LEFT, bg=self.theme["statusbar_label_bg"],
             fg=self.theme["statusbar_label_fg"])
         log_status.pack(anchor="w")
-        reward_total = tk.Label(notif, textvariable=reward, font=self.status_font,
-            justify=tk.LEFT, bg=self.theme["statusbar_label_bg"],
+        reward_total = tk.Label(bar, textvariable=reward, font=self.total_font,
+            justify=tk.RIGHT, bg=self.theme["statusbar_label_bg"],
             fg=self.theme["statusbar_label_fg"])
-        reward_total.pack(anchor="w")
+        reward_total.pack(side="right")
         # cali = tk.Button(buttons, text="Calibrate", anchor="e",
         #     relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
         #     fg=self.theme["button_fg"])
