@@ -90,8 +90,8 @@ class Labels:
         "key:": "DestinationStation",
         "width": 75
     }, {
-        "title": "Expiry",
-        "key:": "Expiry",
+        "title": "Reward",
+        "key:": "Reward",
         "width": 100 
     }
     ]
@@ -122,9 +122,9 @@ class Labels:
         labels.missions[id]["Wing Mission"] = {"text": str(mission["Wing"])}
         labels.missions[id]["Status"] = {"textvariable":
             tk.StringVar(value=mission["Status"])}
-        expiry = Labels.calculate_expiry_time(mission["Expiry"])
-        labels.missions[id]["Expiry"] = {"textvariable":
-            tk.StringVar(value=expiry)}
+        reward = f'{mission["Reward"]:,}'
+        labels.missions[id]["Reward"] = {"textvariable":
+            tk.StringVar(value=reward)}
 
     @staticmethod
     def calculate_expiry_time(expiry_time: int):

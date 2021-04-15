@@ -210,7 +210,7 @@ class ReadLog:
         else:
             faction.other.append(id)
         massacre_missions.factions[faction_name].mission_count += 1
-        massacre_missions.factions[faction_name].Reward += mission["Reward"]
+        #massacre_missions.factions[faction_name].Reward += mission["Reward"]
         Labels.update_faction_label_text(faction_name, faction, self.label_texts)
         # add to id list for easy check
         massacre_missions.mission_ids.append(id)
