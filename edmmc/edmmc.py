@@ -7,6 +7,7 @@ import time
 import json
 from readlog import ReadLog, cg
 from constructors import MassacreMissions, Labels
+from gui import tk
 
 # FIXME: this way of restarting only works if this program is run alongside with ED every time
 # with open("test_log.txt", "r") as f:
@@ -18,7 +19,7 @@ class MassacreCompanion:
         self.initialized = False
         self.missions = MassacreMissions([], {}, "", 0, 0, 0, {})
         rl.check_ed_log_path()
-        cg.status_bar(rl.label_texts.ed_status, rl.label_texts.current_log_status)
+        cg.status_bar(rl.label_texts.ed_status, rl.label_texts.current_log_status, rl.label_texts.total_reward)
         self.refresh_int = 3000
 
     def update(self):

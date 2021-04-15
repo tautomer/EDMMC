@@ -21,7 +21,7 @@ class DynamicGrid(tk.Frame):
         self.text.configure(state="disabled")
 
 class CompanionGUI:
-    TotalReward = 0
+    
     def __init__(self):
         self.theme = {
             "font": "Calibri",
@@ -61,8 +61,8 @@ class CompanionGUI:
         frame = tk.Frame(self.window, bd=2, pady=3, bg=self.theme["faction_frame_bg"])
         frame.pack(fill=tk.Y, anchor=tk.W)
         
-        label = tk.Label(frame, text="Total Reward: " + f'{self.TotalReward:,}')
-        label.pack()
+        #label = tk.Label(frame, text="Total Reward: " + f'{self.TotalReward:,}')
+        #label.pack()
     
     def add_faction(self, name: str, faction: dict):
         # add a new frame for the current faction
@@ -137,7 +137,7 @@ class CompanionGUI:
                 w.destroy()
         return []
 
-    def status_bar(self, ed: tk.StringVar, log: tk.StringVar):
+    def status_bar(self, ed: tk.StringVar, log: tk.StringVar, reward: tk.StringVar):
         bar = tk.Frame(self.window, relief=tk.RAISED, bd=0,
             bg=self.theme["statusbar_frame_bg"])
         bar.pack(fill=tk.BOTH, side=tk.BOTTOM) 
@@ -153,6 +153,10 @@ class CompanionGUI:
             justify=tk.LEFT, bg=self.theme["statusbar_label_bg"],
             fg=self.theme["statusbar_label_fg"])
         log_status.pack(anchor="w")
+        reward_total = tk.Label(notif, textvariable=reward, font=self.status_font,
+            justify=tk.LEFT, bg=self.theme["statusbar_label_bg"],
+            fg=self.theme["statusbar_label_fg"])
+        reward_total.pack(anchor="w")
         # cali = tk.Button(buttons, text="Calibrate", anchor="e",
         #     relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
         #     fg=self.theme["button_fg"])

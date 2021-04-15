@@ -34,6 +34,10 @@ class DynamicalLabels:
     missions: Dict[str, Dict[str, tk.StringVar]]
     ed_status: tk.StringVar
     current_log_status: tk.StringVar
+    total_reward: tk.StringVar
+@dataclass
+class MasterData:
+    total_reward: int
 
 class Labels:
     faction_labels = [ {

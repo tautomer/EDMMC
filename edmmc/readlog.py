@@ -5,7 +5,7 @@ import json
 # import ujson as json
 from typing import Dict, IO, Union
 from dateutil.parser import parse
-from constructors import MassacreMissions, FactionMissions, DynamicalLabels
+from constructors import MassacreMissions, FactionMissions, DynamicalLabels, MasterData
 from constructors import Labels
 from gui import CompanionGUI, tk
 
@@ -28,7 +28,9 @@ class ReadLog:
         self.mission_id = {}
         self.rm_key_list = ["event", "Name", "LocalisedName", "Influence",
             "Reputation"]
-        self.label_texts = DynamicalLabels({}, {}, tk.StringVar(), tk.StringVar())
+        self.label_texts = DynamicalLabels({}, {}, tk.StringVar(), tk.StringVar(), tk.StringVar())
+        self.master_data = MasterData(0)
+        self.total_reward = 0
 
     def check_ed_log_path(self):
         """find ED log path
@@ -206,6 +208,8 @@ class ReadLog:
             faction.KillCount += mission["KillCount"]
             faction.Progress += mission["Progress"]
             faction.Reward += mission["Reward"]
+            self.master_data.total_reward += mission["Reward"]
+            self.label_texts.total_reward.set("Total Rewards: " + f'{self.master_data.total_reward:,}')
             faction.running.append(id)
         else:
             faction.other.append(id)
@@ -339,7 +343,8 @@ class ReadLog:
                     reward = details["Reward"]
                     f.KillCount -= kill_count 
                     f.Progress -= progress
-                    f.Reward -= reward
+                    self.master_data.total_reward -= reward
+                    self.label_texts.total_reward.set("Total Rewards: " + f'{self.master_data.total_reward:,}')
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()
@@ -367,9 +372,9 @@ class ReadLog:
                     self.check_process()
                     self.update_counter = 0
             self.cleanup(missions)
-        for k, v in missions.missions.items():
-            expiry = Labels.calculate_expiry_time(v["Expiry"])
-            self.label_texts.missions[k]["Expiry"]["textvariable"].set(expiry)
+        #for k, v in missions.missions.items():
+        #    expiry = Labels.calculate_expiry_time(v["Expiry"])
+        #    self.label_texts.missions[k]["Expiry"]["textvariable"].set(expiry)
 
     def cleanup(self, missions: MassacreMissions):
         if self.past_missions:
