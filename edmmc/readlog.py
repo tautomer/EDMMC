@@ -133,7 +133,7 @@ class ReadLog:
         # check all new mission and bounty events
         self.read_event(events[cut:], missions, initialized)
         # assign values to the labels
-        
+        self.cleanup(missions)
         return initialized
 
     def find_resumed_missions(self, event: dict):
@@ -336,9 +336,10 @@ class ReadLog:
                     missions.mission_ids.remove(id)
                     kill_count = details["KillCount"]
                     progress = details["Progress"]
+                    reward = details["Reward"]
                     f.KillCount -= kill_count 
                     f.Progress -= progress
-                    f.Reward -= details["Reward"]
+                    f.Reward -= reward
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()
