@@ -47,7 +47,7 @@ class ReadLog:
         # FIXME: this way of checking new files is way too bad
         # TODO: `glob` could be slow
         journals = glob.glob(self.log_path + "\Journal.*.log")
-        journals.sort(key=os.path.getmtime, reverse=True)
+        journals.sort(key=os.path.getctime, reverse=True)
         latest = journals.pop(0)
         if self.current_log_name != latest:
             self.current_log_name = latest
@@ -133,6 +133,7 @@ class ReadLog:
         # check all new mission and bounty events
         self.read_event(events[cut:], missions, initialized)
         # assign values to the labels
+        
         return initialized
 
     def find_resumed_missions(self, event: dict):
@@ -153,17 +154,21 @@ class ReadLog:
                         else:
                             start = self.log_time - 172_800 - mission["Expires"]
                         self.current_missions[mission['MissionID']] = start
+                        
 
     def find_mission_details(self, massacre_missions: MassacreMissions):
         try:
             oldest_mission = min(self.current_missions.values())
-            for journal in self.log_7days:
-                if os.path.getmtime(journal) >= oldest_mission:
-                    with open(journal, 'r') as log:
-                        self.read_event(log, massacre_missions, False)
         except ValueError:
-            # print("Empty mission list")
+            #print("Empty mission list")
             pass
+        
+        for journal in self.log_7days:
+            if os.path.getctime(journal) >= oldest_mission:
+                with open(journal, 'r', encoding="utf-8") as log:
+                    self.read_event(log, massacre_missions, False)
+        
+
 
     def mission_accepted(self, id: int, mission: dict, massacre_missions: MassacreMissions):
         # there could be multiple resumed sessions
@@ -333,7 +338,7 @@ class ReadLog:
                     progress = details["Progress"]
                     f.KillCount -= kill_count 
                     f.Progress -= progress
-                    f.Reward -= Reward
+                    f.Reward -= details["Reward"]
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()

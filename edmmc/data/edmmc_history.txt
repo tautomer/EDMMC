@@ -1,41 +1,9 @@
 {
-    "mission_ids": [
-        752723119
-    ],
-    "factions": {
-        "Lescherty Flag": {
-            "mission_count": 1,
-            "KillCount": 45,
-            "Progress": 0,
-            "Reward": 43625448,
-            "running": [
-                752723119
-            ],
-            "ready": [],
-            "past": [],
-            "other": []
-        }
-    },
-    "target_faction": "HIP 103208 Blue Posse",
+    "mission_ids": [],
+    "factions": {},
+    "target_faction": "",
     "pirates_killed": 0,
     "target_faction_pirates_killed": 0,
     "total_bounty_claimed": 0,
-    "missions": {
-        "752723119": {
-            "timestamp": 1618404328.0,
-            "Faction": "Lescherty Flag",
-            "TargetType": "$MissionUtil_FactionTag_Pirate;",
-            "TargetType_Localised": "Pirates",
-            "TargetFaction": "HIP 103208 Blue Posse",
-            "KillCount": 45,
-            "DestinationSystem": "HIP 103208",
-            "DestinationStation": "Gaspar de Lemos Keep",
-            "Expiry": 1619009080,
-            "Wing": true,
-            "Reward": 21812724,
-            "MissionID": 752723119,
-            "Status": "Active",
-            "Progress": 0
-        }
-    }
+    "missions": {}
 }
