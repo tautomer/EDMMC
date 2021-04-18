@@ -2,6 +2,7 @@ import os
 import glob
 import psutil
 import json
+import subprocess
 # import ujson as json
 from typing import Dict, IO, Union
 from dateutil.parser import parse
@@ -13,12 +14,18 @@ cg = CompanionGUI()
 class ReadLog:
 
     def __init__(self):
+        # TODO: place this thing in a suitable place
+        # change windows cli output to English
+        # I could check if the system language is English or not
+        # but locale module is not reliable
+        subprocess.run('chcp 437', shell=True)
         self.log_path = ""
         self.current_log = IO
         self.current_log_name = ""
         self.log_time = 0
         self.log_7days = []
         self.ed_process_name = "EliteDangerous64.exe"
+        self.tasklist_cmd = f'tasklist /NH /FI "IMAGENAME eq {self.ed_process_name}"'
         self.is_game_running = False
         self.sanity = True
         self.update_counter = 0
@@ -93,12 +100,17 @@ class ReadLog:
             there isn't any update in log file for 5 iterations and the game is
             "apparently" running.
         """
-        if self.ed_process_name in (p.name() for p in psutil.process_iter()):
-            self.is_game_running = True
-            self.label_texts.ed_status.set("ED client is running")
-        else:
+        # this way is around 10x faster on my machine than psutil
+        # if the process isn't running, the output from the command is
+        # "INFO: No tasks are running which match the specified criteria."
+        status = subprocess.check_output(self.ed_process_name, shell=True).decode()
+        # not running
+        if 'INFO' == status[:4]:
             self.is_game_running = False
             self.label_texts.ed_status.set("ED client is NOT running")
+        else:
+            self.is_game_running = True
+            self.label_texts.ed_status.set("ED client is running")
 
     def initialize(self, log: IO, missions: MassacreMissions, initialized: bool):
         self.check_process()
