@@ -60,7 +60,7 @@ class ReadLog:
             self.current_log_name = latest
             if not self.current_log:
                 self.current_log.close()
-            self.current_log = open(latest, "r")
+            self.current_log = open(latest, "r", "utf-8")
             self.is_game_running = True
             self.label_texts.ed_status.set("ED client is running")
             self.label_texts.current_log_status.set("Current log file: " +
@@ -171,7 +171,7 @@ class ReadLog:
             oldest_mission = min(self.current_missions.values())
             for journal in self.log_7days:
                 if os.path.getmtime(journal) >= oldest_mission:
-                    with open(journal, 'r') as log:
+                    with open(journal, 'r', "utf-8") as log:
                         self.read_event(log, massacre_missions, False)
         except ValueError:
             # print("Empty mission list")
