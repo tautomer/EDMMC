@@ -56,7 +56,7 @@ class Labels:
             "text": "Progress:",
             "key": "Progress",
             "len": 8,
-            "minsize": 50
+            "minsize": 75
         } ,
         {
             "text": "Reward:",
@@ -109,6 +109,7 @@ class Labels:
         labels.factions[name] = {"name": {"text": name}}
         labels.factions[name]["mission_count"] = {"textvariable": tk.IntVar()}
         labels.factions[name]["Progress"] = {"textvariable": tk.StringVar()}
+        labels.factions[name]["Reward"] = {"textvariable": tk.StringVar()}
 
     @staticmethod
     def mission_label_text_setup(id: int, mission: dict, labels:DynamicalLabels):
@@ -132,6 +133,8 @@ class Labels:
         expiry = Labels.calculate_expiry_time(mission["Expiry"])
         labels.missions[id]["Expiry"] = {"textvariable":
             tk.StringVar(value=expiry)}
+        reward = f'{mission["Reward"]:,}'
+        labels.missions[id]["Reward"] = {"textvariable": tk.StringVar(value=reward)}
 
     @staticmethod
     def calculate_expiry_time(expiry_time: int):
@@ -152,3 +155,5 @@ class Labels:
         labels.factions[name]["mission_count"]["textvariable"].set(
             faction.mission_count)
         labels.factions[name]["Progress"]["textvariable"].set(progress)
+        reward = f'{faction.Reward:,}'
+        labels.factions[name]["Reward"]["textvariable"].set(reward)

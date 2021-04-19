@@ -61,7 +61,7 @@ class ReadLog:
             self.current_log_name = latest
             if not self.current_log:
                 self.current_log.close()
-            self.current_log = open(latest, "r", "utf-8")
+            self.current_log = open(latest, "r", encoding="utf-8")
             self.is_game_running = True
             self.label_texts.ed_status.set("ED client is running")
             self.label_texts.current_log_status.set("Current log file: " +
@@ -104,9 +104,11 @@ class ReadLog:
         # this way is around 10x faster on my machine than psutil
         # if the process isn't running, the output from the command is
         # "INFO: No tasks are running which match the specified criteria."
-        status = subprocess.check_output(self.ed_process_name, shell=True).decode()
+        #status = subprocess.check_output(self.ed_process_name, shell=True).decode()
+        status = self.ed_process_name in (p.name() for p in psutil.process_iter())
         # not running
-        if 'INFO' == status[:4]:
+        #if 'INFO' == status[:4]:
+        if not status:
             self.is_game_running = False
             self.label_texts.ed_status.set("ED client is NOT running")
         else:
@@ -172,7 +174,7 @@ class ReadLog:
             oldest_mission = min(self.current_missions.values())
             for journal in self.log_7days:
                 if os.path.getmtime(journal) >= oldest_mission:
-                    with open(journal, 'r', "utf-8") as log:
+                    with open(journal, 'r' , encoding="utf-8") as log:
                         self.read_event(log, massacre_missions, False)
         except ValueError:
             # print("Empty mission list")

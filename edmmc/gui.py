@@ -53,7 +53,7 @@ class CompanionGUI:
         self.mission_font = (self.theme["font"], self.theme["fontsize"][2])
         self.status_font = (self.theme["font"], self.theme["fontsize"][3])
         self.window.title("Elite: Dangerous Massacre Missions Companion")
-        self.window.minsize(width=960, height=540)
+        self.window.minsize(width=1110, height=540)
         self.window.resizable(True, True)
         self.window.config(bg=self.theme["window_bg"])
         self.factions = {}
@@ -105,7 +105,7 @@ class CompanionGUI:
     def add_mission(self, id: str, name: str, mission: dict, mission_idx:int):
     # def add_mission(self, name: str, mission: dict, mission_idx:int):
         # retrieve the frame for missions
-        parent = self.factions[name][8]
+        parent = self.factions[name][9]
         # frame = tk.Frame(master=parent, relief=tk.FLAT, border=2, pady=3)
         # frame.grid(row=mission_idx, columnspan=8, sticky="nwse")
         self.missions[id] = []
