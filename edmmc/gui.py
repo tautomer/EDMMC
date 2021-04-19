@@ -105,7 +105,7 @@ class CompanionGUI:
     def add_mission(self, id: str, name: str, mission: dict, mission_idx:int):
     # def add_mission(self, name: str, mission: dict, mission_idx:int):
         # retrieve the frame for missions
-        parent = self.factions[name][7]
+        parent = self.factions[name][8]
         # frame = tk.Frame(master=parent, relief=tk.FLAT, border=2, pady=3)
         # frame.grid(row=mission_idx, columnspan=8, sticky="nwse")
         self.missions[id] = []

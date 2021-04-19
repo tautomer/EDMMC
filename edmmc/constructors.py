@@ -11,6 +11,7 @@ class FactionMissions:
     mission_count: int 
     KillCount: int
     Progress: int
+    Reward: int
     running: List[int]
     ready: List[int]
     past: List[int]
@@ -26,6 +27,10 @@ class MassacreMissions:
     target_faction_pirates_killed: int
     total_bounty_claimed: int
     missions: Dict[int, Dict]
+
+@dataclass
+class MasterData:
+    total_reward: int
 
 @dataclass
 class DynamicalLabels:
@@ -51,6 +56,12 @@ class Labels:
             "text": "Progress:",
             "key": "Progress",
             "len": 8,
+            "minsize": 50
+        } ,
+        {
+            "text": "Reward:",
+            "key": "Reward",
+            "len": 6,
             "minsize": 50
         } 
     ]
@@ -85,6 +96,10 @@ class Labels:
     }, {
         "title": "Expiry",
         "key:": "Expiry",
+        "width": 100 
+    }, {
+        "title": "Reward",
+        "key:": "Reward",
         "width": 100 
     }
     ]

@@ -6,7 +6,7 @@ import subprocess
 # import ujson as json
 from typing import Dict, IO, Union
 from dateutil.parser import parse
-from constructors import MassacreMissions, FactionMissions, DynamicalLabels
+from constructors import MassacreMissions, FactionMissions, DynamicalLabels, MasterData
 from constructors import Labels
 from gui import CompanionGUI, tk
 
@@ -36,6 +36,7 @@ class ReadLog:
         self.rm_key_list = ["event", "Name", "LocalisedName", "Influence",
             "Reputation"]
         self.label_texts = DynamicalLabels({}, {}, tk.StringVar(), tk.StringVar())
+        self.masterdata = MasterData(0)
 
     def check_ed_log_path(self):
         """find ED log path
@@ -203,7 +204,7 @@ class ReadLog:
         try:
             faction = massacre_missions.factions[faction_name]
         except KeyError:
-            faction = FactionMissions(0, 0, 0, [], [], [], [])
+            faction = FactionMissions(0, 0, 0, 0, [], [], [], [])
             massacre_missions.factions[faction_name] = faction
             # create dynamical label text for this faction
             Labels.faction_label_text_setup(faction_name, self.label_texts)
@@ -212,6 +213,8 @@ class ReadLog:
         if mission["TargetType_Localised"] == "Pirates":
             faction.KillCount += mission["KillCount"]
             faction.Progress += mission["Progress"]
+            faction.Reward += mission["Reward"]
+            self.masterdata.total_reward += mission["Reward"]
             faction.running.append(id)
         else:
             faction.other.append(id)
@@ -341,8 +344,11 @@ class ReadLog:
                     missions.mission_ids.remove(id)
                     kill_count = details["KillCount"]
                     progress = details["Progress"]
+                    reward = details["Reward"]
                     f.KillCount -= kill_count 
                     f.Progress -= progress
+                    f.Reward -= reward
+                    self.masterdata.total_reward -= reward
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()
