@@ -130,7 +130,7 @@ class CompanionGUI:
                 w.destroy()
         return []
 
-    def status_bar(self, ed: tk.StringVar, log: tk.StringVar):
+    def status_bar(self, ed: tk.StringVar, log: tk.StringVar, reward: tk.StringVar):
         bar = tk.Frame(self.window, relief=tk.RAISED, bd=0,
             bg=self.theme["statusbar_frame_bg"])
         bar.pack(fill=tk.BOTH, side=tk.BOTTOM) 
@@ -146,6 +146,10 @@ class CompanionGUI:
             justify=tk.LEFT, bg=self.theme["statusbar_label_bg"],
             fg=self.theme["statusbar_label_fg"])
         log_status.pack(anchor="w")
+        total_reward = tk.Label(buttons, textvariable=reward, font=self.title_font,
+            justify=tk.RIGHT, bg=self.theme["statusbar_label_bg"],
+            fg=self.theme["statusbar_label_fg"])
+        total_reward.pack(anchor="w")
         # cali = tk.Button(buttons, text="Calibrate", anchor="e",
         #     relief=tk.RAISED, bd=1, bg=self.theme["button_bg"],
         #     fg=self.theme["button_fg"])

@@ -35,7 +35,7 @@ class ReadLog:
         self.mission_id = {}
         self.rm_key_list = ["event", "Name", "LocalisedName", "Influence",
             "Reputation"]
-        self.label_texts = DynamicalLabels({}, {}, tk.StringVar(), tk.StringVar())
+        self.label_texts = DynamicalLabels({}, {}, tk.StringVar(), tk.StringVar(), tk.StringVar())
         self.masterdata = MasterData(0)
 
     def check_ed_log_path(self):
@@ -217,6 +217,8 @@ class ReadLog:
             faction.Progress += mission["Progress"]
             faction.Reward += mission["Reward"]
             self.masterdata.total_reward += mission["Reward"]
+            rwd = "Total Reward: " + f'{self.masterdata.total_reward:,}'
+            self.label_texts.total_rwd.set(rwd)
             faction.running.append(id)
         else:
             faction.other.append(id)
@@ -351,6 +353,8 @@ class ReadLog:
                     f.Progress -= progress
                     f.Reward -= reward
                     self.masterdata.total_reward -= reward
+                    rwd = "Total Reward: " + f'{self.masterdata.total_reward:,}'
+                    self.label_texts.total_rwd.set(rwd)
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()

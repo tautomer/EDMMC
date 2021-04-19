@@ -137,9 +137,9 @@
         }
     },
     "target_faction": "HIP 103208 Blue Posse",
-    "pirates_killed": 62,
+    "pirates_killed": 71,
     "target_faction_pirates_killed": 0,
-    "total_bounty_claimed": 824330,
+    "total_bounty_claimed": 973399,
     "missions": {
         "754422847": {
             "timestamp": 1618694799.0,

@@ -18,7 +18,8 @@ class MassacreCompanion:
         self.initialized = False
         self.missions = MassacreMissions([], {}, "", 0, 0, 0, {})
         rl.check_ed_log_path()
-        cg.status_bar(rl.label_texts.ed_status, rl.label_texts.current_log_status)
+        rwd = f'{rl.masterdata.total_reward:,}'
+        cg.status_bar(rl.label_texts.ed_status, rl.label_texts.current_log_status, rl.label_texts.total_rwd)
         self.refresh_int = 3000
 
     def update(self):
