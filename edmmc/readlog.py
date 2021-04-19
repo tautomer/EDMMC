@@ -288,10 +288,15 @@ class ReadLog:
         faction = massacre_missions.factions[mission["Faction"]]
         # update faction info
         # TODO: normally I'm not this stupid to abandon finished missions, so better go with try/except
-        if id in faction.running:
+        #if id in faction.running:
+        try:
             faction.running.remove(id)
-        if id in faction.ready:
-            faction.ready.remove(id)
+        #if id in faction.ready:
+        except:
+            try:
+                faction.ready.remove(id)
+            except:
+                faction.other.remove(id)
         faction.past.append(id)
         self.past_missions = True
 
@@ -326,8 +331,8 @@ class ReadLog:
                     self.mission_accepted(id, mission, missions)
                 elif status == "Redirected":
                     self.mission_redirected(id, mission, missions)
-                elif status == "Completed":
-                    self.mission_completed(id, missions)
+                #elif status == "Completed":
+                #    self.mission_completed(id, missions)
                 else:
                     # for failed or abondoned missions
                     self.mission_failed(id, missions, status)
@@ -353,8 +358,6 @@ class ReadLog:
                     f.Progress -= progress
                     f.Reward -= reward
                     self.masterdata.total_reward -= reward
-                    rwd = "Total Reward: " + f'{self.masterdata.total_reward:,}'
-                    self.label_texts.total_rwd.set(rwd)
                     f.mission_count -= 1
                     rmlist.append(id)
                 f.past.clear()
@@ -363,6 +366,8 @@ class ReadLog:
             else:
                 Labels.update_faction_label_text(k, f, self.label_texts)
         rmlist = cg.destroy_missions(rmlist)
+        rwd = "Total Reward: " + f'{self.masterdata.total_reward:,}'
+        self.label_texts.total_rwd.set(rwd)
         self.past_missions = False
 
     def update(self, missions: MassacreMissions, initialized: bool):
