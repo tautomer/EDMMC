@@ -191,8 +191,8 @@ class ReadLog:
             # TODO: there are massacre mission on clean ships when war state
             except KeyError:
                 pass
-        if not massacre_missions.target_faction:
-            massacre_missions.target_faction = mission["TargetFaction"]
+        #if not massacre_missions.target_faction:
+        massacre_missions.target_faction = mission["TargetFaction"]
         # add my own status
         mission["Status"] = "Active"
         # convert both starting and ending time to Unix timpstamps

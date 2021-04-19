@@ -36,14 +36,14 @@
         "Space Cow Truckers Ltd": {
             "mission_count": 3,
             "KillCount": 126,
-            "Progress": 35,
+            "Progress": 70,
             "Reward": 60772880,
             "running": [
-                755155608,
                 755157238
             ],
             "ready": [
-                755154092
+                755154092,
+                755155608
             ],
             "past": [],
             "other": []
@@ -51,13 +51,12 @@
         "Oduduro Natural PLC": {
             "mission_count": 2,
             "KillCount": 90,
-            "Progress": 45,
+            "Progress": 90,
             "Reward": 43298106,
-            "running": [
-                755154047
-            ],
+            "running": [],
             "ready": [
-                755154036
+                755154036,
+                755154047
             ],
             "past": [],
             "other": []
@@ -65,14 +64,13 @@
         "Earth Defense Fleet": {
             "mission_count": 3,
             "KillCount": 118,
-            "Progress": 48,
+            "Progress": 118,
             "Reward": 56875636,
-            "running": [
+            "running": [],
+            "ready": [
+                755155540,
                 755157371,
                 755162518
-            ],
-            "ready": [
-                755155540
             ],
             "past": [],
             "other": []
@@ -80,13 +78,12 @@
         "Oduduro Inc": {
             "mission_count": 2,
             "KillCount": 70,
-            "Progress": 35,
+            "Progress": 70,
             "Reward": 33820310,
-            "running": [
-                755155509
-            ],
+            "running": [],
             "ready": [
-                755154008
+                755154008,
+                755155509
             ],
             "past": [],
             "other": []
@@ -94,14 +91,14 @@
         "Allied Oduduro Defence Party": {
             "mission_count": 3,
             "KillCount": 120,
-            "Progress": 45,
+            "Progress": 85,
             "Reward": 57922630,
             "running": [
-                755162601,
                 755162654
             ],
             "ready": [
-                755155675
+                755155675,
+                755162601
             ],
             "past": [],
             "other": []
@@ -109,14 +106,14 @@
         "Oduduro Justice Party": {
             "mission_count": 3,
             "KillCount": 131,
-            "Progress": 45,
+            "Progress": 75,
             "Reward": 63162012,
             "running": [
-                755162706,
                 755162745
             ],
             "ready": [
-                755155705
+                755155705,
+                755162706
             ],
             "past": [],
             "other": []
@@ -124,22 +121,21 @@
         "Independent Oduduro Revolutionary Party": {
             "mission_count": 2,
             "KillCount": 70,
-            "Progress": 30,
+            "Progress": 70,
             "Reward": 33809246,
-            "running": [
-                755157204
-            ],
+            "running": [],
             "ready": [
-                755155754
+                755155754,
+                755157204
             ],
             "past": [],
             "other": []
         }
     },
     "target_faction": "HIP 103208 Blue Posse",
-    "pirates_killed": 71,
+    "pirates_killed": 131,
     "target_faction_pirates_killed": 0,
-    "total_bounty_claimed": 973399,
+    "total_bounty_claimed": 1678123,
     "missions": {
         "754422847": {
             "timestamp": 1618694799.0,
@@ -196,14 +192,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 45,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Oluwafemi Hub",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Hawking Terminal",
             "Expiry": 1619412428,
             "Wing": true,
             "Reward": 21652960,
             "MissionID": 755154047,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 45
         },
         "755154092": {
             "timestamp": 1618807708.0,
@@ -228,14 +224,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 35,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Foucault Ring",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Kraepelin Hub",
             "Expiry": 1619412826,
             "Wing": true,
             "Reward": 16895508,
             "MissionID": 755155509,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 35
         },
         "755155540": {
             "timestamp": 1618808088.0,
@@ -260,14 +256,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 35,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Oluwafemi Hub",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Kraepelin Hub",
             "Expiry": 1619412826,
             "Wing": true,
             "Reward": 16889782,
             "MissionID": 755155608,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 35
         },
         "755155675": {
             "timestamp": 1618808123.0,
@@ -324,14 +320,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 40,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Oluwafemi Hub",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Whitney Station",
             "Expiry": 1619413257,
             "Wing": true,
             "Reward": 19316676,
             "MissionID": 755157204,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 40
         },
         "755157238": {
             "timestamp": 1618808545.0,
@@ -356,14 +352,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 25,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Foucault Ring",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Whitney Station",
             "Expiry": 1619413257,
             "Wing": true,
             "Reward": 12024612,
             "MissionID": 755157371,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 25
         },
         "755162518": {
             "timestamp": 1618810030.0,
@@ -372,14 +368,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 45,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Veach Orbital",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Conrad Hub",
             "Expiry": 1619414798,
             "Wing": true,
             "Reward": 21716408,
             "MissionID": 755162518,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 45
         },
         "755162601": {
             "timestamp": 1618810055.0,
@@ -388,14 +384,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 40,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Van Scyoc Relay",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Conrad Hub",
             "Expiry": 1619414798,
             "Wing": true,
             "Reward": 19307254,
             "MissionID": 755162601,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 40
         },
         "755162654": {
             "timestamp": 1618810068.0,
@@ -420,14 +416,14 @@
             "TargetType_Localised": "Pirates",
             "TargetFaction": "LP 410-93 Purple Syndicate",
             "KillCount": 30,
-            "DestinationSystem": "LP 410-93",
-            "DestinationStation": "Veach Orbital",
+            "DestinationSystem": "Oduduro",
+            "DestinationStation": "Conrad Hub",
             "Expiry": 1619414798,
             "Wing": true,
             "Reward": 14540004,
             "MissionID": 755162706,
-            "Status": "Active",
-            "Progress": 0
+            "Status": "Done",
+            "Progress": 30
         },
         "755162745": {
             "timestamp": 1618810092.0,
