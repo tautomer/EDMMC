@@ -3,23 +3,6 @@ from tkinter import font
 from constructors import Labels
 import random
 
-class DynamicGrid(tk.Frame):
-    def __init__(self, parent, *args, **kwargs):
-        tk.Frame.__init__(self, parent, *args, **kwargs)
-        self.text = tk.Text(self, wrap="char", borderwidth=0, highlightthickness=0,
-                            state="disabled")
-        self.text.pack(fill="both", expand=True)
-        self.boxes = []
-
-    def add_box(self, color=None):
-        bg = color if color else random.choice(("red", "orange", "green", "blue", "violet"))
-        box = tk.Frame(self.text, bd=1, relief="sunken", background=bg,
-                       width=100, height=100)
-        self.boxes.append(box)
-        self.text.configure(state="normal")
-        self.text.window_create("end", window=box)
-        self.text.configure(state="disabled")
-
 class CompanionGUI:
     
     def __init__(self):
@@ -43,6 +26,33 @@ class CompanionGUI:
             "button_fg": "#222f3e"
         }
         self.window = tk.Tk()
+        # self.main_frame = self.window
+        self.window.minsize(width=960, height=540)
+        self.window.resizable(True, True)
+        # frame for both the canvas and scroll bar
+        self.master_frame = tk.Frame(self.window, bg=self.theme["window_bg"])
+        self.master_frame.pack(expand=True, fill=tk.BOTH)
+        # add a vertical scrollbar
+        # initialize the canvas
+        self.canvas = tk.Canvas(self.master_frame, bg=self.theme["window_bg"])
+        self.canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        scrollbar = tk.Scrollbar(self.master_frame, command=self.canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill='both')
+        self.canvas.configure(yscrollcommand = scrollbar.set)
+        # main frame to draw all mission related stuff
+        self.main_frame = tk.Frame(self.canvas, bg=self.theme["window_bg"])
+        self.canvas_frame = self.canvas.create_window(0, 0, window=self.main_frame, anchor='w')
+        def on_configure(event):
+            # update scrollregion after starting 'mainloop'
+            # when all widgets are in canvas
+            self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+        def frame_width(event):
+            canvas_width = event.width
+            self.canvas.itemconfig(self.canvas_frame, width = canvas_width)
+        # dynamically changing the canvas size
+        self.canvas.bind('<Configure>', frame_width)
+        self.main_frame.bind('<Configure>', on_configure)
+        # change app icon
         self.window.iconbitmap("./icons/mercenary.ico")
         self.font = font.nametofont("TkDefaultFont")
         self.font.config(size=self.theme["fontsize"][0])
@@ -53,15 +63,13 @@ class CompanionGUI:
         self.mission_font = (self.theme["font"], self.theme["fontsize"][2])
         self.status_font = (self.theme["font"], self.theme["fontsize"][3])
         self.window.title("Elite: Dangerous Massacre Missions Companion")
-        self.window.minsize(width=960, height=540)
-        self.window.resizable(True, True)
         self.window.config(bg=self.theme["window_bg"])
         self.factions = {}
         self.missions = {}
     
     def add_faction(self, name: str, faction: dict):
         # add a new frame for the current faction
-        frame = tk.Frame(self.window, relief=tk.FLAT, bd=2, pady=3,
+        frame = tk.Frame(self.main_frame, relief=tk.FLAT, bd=2, pady=3,
             bg=self.theme["faction_frame_bg"])
         frame.pack(fill=tk.Y, anchor=tk.W)
         # add it to the dictionary
@@ -90,7 +98,7 @@ class CompanionGUI:
             i += 1
 
         # build the title bar (what should be a proper name for this?) for this faction
-        frame = tk.Frame(self.window, relief=tk.FLAT, bd=2, pady=0,
+        frame = tk.Frame(self.main_frame, relief=tk.FLAT, bd=2, pady=0,
             bg=self.theme["tab_frame_bg"])
         frame.pack(fill=tk.BOTH)
         self.factions[name].append(frame)

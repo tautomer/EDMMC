@@ -103,7 +103,7 @@ class ReadLog:
         # this way is around 10x faster on my machine than psutil
         # if the process isn't running, the output from the command is
         # "INFO: No tasks are running which match the specified criteria."
-        status = subprocess.check_output(self.ed_process_name, shell=True).decode()
+        status = subprocess.check_output(self.tasklist_cmd, shell=True).decode()
         # not running
         if 'INFO' == status[:4]:
             self.is_game_running = False
